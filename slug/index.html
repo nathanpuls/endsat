@@ -1,0 +1,71 @@
+<div id="showLink"></div>
+
+<script>
+  //changed to all one var and renamed
+  function redirectBasedOnSlug() {
+    const urlParams = new URLSearchParams(window.location.search);
+    let slug = urlParams.get("slug");
+    let a = '';//urlParams.get("a");
+    //let b = urlParams.get("b");
+    //let c = urlParams.get("c");
+    
+    //slug = 'a'; //testing
+ 
+    
+    slug = slug.toLowerCase();
+
+
+    // Fetch Google Sheet data to populate redirection rules
+    var API_KEY = 'AIzaSyDtBiP0s5TwGX9_G9iMHyke4b1k86JT8i4';
+    var spreadsheetId = '1AKMs6NDczNfHiyXpVxHYMhi4cEuVS7gUAyjp6XJsxY0';
+    var range = 'Sheet1!A:B';
+
+    var sheetLink = `https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values/${range}?key=${API_KEY}`;
+
+    fetch(sheetLink)
+  .then(response => response.json())
+  .then(data => {
+    const redirectionRules = {};
+
+    if (data.values && data.values.length > 0) {
+      data.values.forEach(row => {
+        // Assuming column A contains keys and column B contains URLs
+        const key = row[0] ? row[0].toLowerCase() : ''; // Convert key to lowercase
+        const value = row[1] ? row[1].toLowerCase() : ''; // Convert value to lowercase
+
+        redirectionRules[key] = value;
+      });
+    }
+      
+      let redirectLink = redirectionRules[slug];
+redirectLink = redirectLink.toLowerCase();
+
+      
+      if (redirectLink) {
+  redirectLink = redirectLink;
+
+//httpStart
+
+function checkHttp(rowLink) {
+    if (!rowLink.startsWith('http://') && !rowLink.startsWith('https://')) {
+        rowLink = 'http://' + rowLink;
+    }
+    return rowLink;
+}
+
+redirectLink = checkHttp(redirectLink);
+console.log(redirectLink); 
+
+ window.location.href = redirectLink;
+
+        } else {
+          console.error("Invalid or missing site parameter");
+          // Redirect to a default page or display an error message
+          window.location.href = 'https://nathanpuls.com/404';
+        }
+      })
+      .catch(error => console.error('Error fetching data:', error));
+  }
+
+window.onload = redirectBasedOnSlug;
+</script>
