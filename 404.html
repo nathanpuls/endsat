@@ -57,8 +57,8 @@
 
     // Set random phrase and currentPath on page load
     document.addEventListener("DOMContentLoaded", function() {
-      // Extract the path from the URL
-      const currentPath = window.location.pathname;
+      // Extract the path from the URL and remove slashes
+      const currentPath = window.location.pathname.replace(/\//g, '');
       document.getElementById("currentPath").textContent = `${currentPath}`;
       
       // Exclude the phrase with currentPath
@@ -67,7 +67,7 @@
       const randomPhrase = getRandomPhrase(phrasesWithoutCurrentPath);
       document.getElementById("randomPhrase").textContent = randomPhrase;
 
-      window.location.href = `https://${currentPath}.ends.at`; //comment out for testing
+      // window.location.href = `https://${currentPath}.ends.at`; //comment out for testing
     });
   </script>
 </body>
