@@ -54,12 +54,9 @@ a.link:hover {
     let slug = urlParams.get("slug");
     //slug = 'avila'; // comment out for live version
     //slug = 'np'; // comment out for live version
-        //slug = 'amazon'; // comment out for live version
+    //slug = 'amazon'; // comment out for live version
     document.title=slug;   
     
-  
-    
-   // slug = 'avila'; // Test - comment out for live
     slug = slug.toLowerCase();
     
       // Update the content of the h1 element with the 'pagename' class
@@ -98,7 +95,36 @@ a.link:hover {
           // Use redirectLink as the API key for the second spreadsheet
           var secondSpreadsheetId = redirectLink; // Assuming redirectLink contains the second spreadsheet ID
           var secondRange = 'Sheet1!A:B';
-          var secondSheetLink = `https://sheets.googleapis.com/v4/spreadsheets/${secondSpreadsheetId}/values/${secondRange}?key=${API_KEY}`;
+          
+          //extract sheet ID if URL otherwise pass ID
+          
+          function extractSheetID(redirectLink) {
+    const urlRegex = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w.-]*)*\/?$/;
+
+    // Check if redirectLink matches the URL pattern
+    if (urlRegex.test(redirectLink)) {
+        const regex = /\/d\/([a-zA-Z0-9-_]+)/;
+        const match = redirectLink.match(regex);
+        if (match && match[1]) {
+            return match[1]; // Return the extracted ID if it's a full URL
+        }
+    }
+
+    // Return the original redirectLink if it doesn't match the URL pattern or ID extraction fails
+    return redirectLink;
+}
+
+
+const secondsheetID = extractSheetID(redirectLink);
+
+          
+console.log(secondsheetID); // This will log the extracted ID to the console
+
+          
+          
+          
+          
+          var secondSheetLink = `https://sheets.googleapis.com/v4/spreadsheets/${secondsheetID}/values/${secondRange}?key=${API_KEY}`;
 
           fetch(secondSheetLink)
             .then(response => response.json())
