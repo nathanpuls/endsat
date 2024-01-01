@@ -4,7 +4,13 @@
   <title>Redirecting...</title>
   <script type="text/javascript">
     window.onload = function() {
-      window.location.href = 'http://ends.at';
+      var currentPath = window.location.pathname; // Get the path after the domain
+
+      if (currentPath !== '/') { // If there's a path
+        window.location.href = 'http://wyr.es' + currentPath; // Redirect to wyr.es with the current path
+      } else { // If there's no path
+        window.location.href = 'http://ends.at'; // Redirect to ends.at
+      }
     };
   </script>
 </head>
