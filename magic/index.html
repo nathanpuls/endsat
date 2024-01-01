@@ -9,6 +9,35 @@
     let b = urlParams.get("b");
     let c = urlParams.get("c");
 
+    //display path
+
+    function displayLinkBasedOnParams() {
+  const urlParams = new URLSearchParams(window.location.search);
+  let s = urlParams.get("s");
+  let a = urlParams.get("a");
+
+  // Check if both parameters exist
+  if (s && a) {
+    // Creating the desired link format
+    let linkText = `${s}.ends.at/${a}`;
+
+    // Create a div element
+    const showLinkDiv = document.getElementById("showLink");
+
+    // Set the link text as content inside the div
+    showLinkDiv.textContent = linkText;
+  } else {
+    // Handle case when parameters are missing
+    const showLinkDiv = document.getElementById("showLink");
+    showLinkDiv.textContent = "Parameters missing";
+  }
+}
+
+// Call the function when the window loads
+window.onload = displayLinkBasedOnParams;
+
+    //end display path
+
     //testing purposes
     //s = 'B';
     //a = 'MAt.1'
