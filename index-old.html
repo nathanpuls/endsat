@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ends.at</title>
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.png">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+        }
+        .wave-container {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            z-index: -1;
+        }
+        svg {
+            position: relative;
+            display: block;
+        }
+        .splash-content {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .title {
+            font-size: 48px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="wave-container">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320" id="wave">
+            <path fill="#71c7ec" fill-opacity=".7" d="M0,256L60,224C120,192,240,128,360,138.7C480,149,600,235,720,245.3C840,256,960,192,1080,160C1200,128,1320,128,1380,128L1440,128L1440,320L1380,320C1320,320,1200,320,1080,320C960,320,840,320,720,320C600,320,480,320,360,320C240,320,120,320,60,320L0,320Z"></path>
+        </svg>
+    </div>
+    <div class="splash-content">
+        <div class="title">ends.at</div>
+    </div>
+
+    <script>
+        // Array of colors to choose from
+        const colors = ["#71c7ec", "#ffcc00", "#ff6699", "#99ff99", "#cc99ff"];
+
+        // Function to pick a random color
+        function pickRandomColor() {
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // Apply a random color to the wave upon page load
+        window.addEventListener('load', () => {
+            const wave = document.getElementById('wave');
+            if (wave) {
+                wave.querySelector('path').setAttribute('fill', pickRandomColor());
+            }
+        });
+    </script>
+</body>
+</html>
