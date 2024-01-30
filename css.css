@@ -13,22 +13,22 @@ body {
   display: flex;
   justify-content: left;
   align-items: left;
-  height: 100vh;
-  margin: 0;
+  
+  margin: 20px;
   font-size: 16px;
 
   flex-direction: column;
   text-align: left;
 }
 p {
-  margin: 5px;
-  margin-left: 50px;
+  margin: 0px;
+  
 }
 
 h1 {
   margin-bottom: 20px;
-  margin-left: 50px;
-  margin-top: 40px;
+  
+  
 }
 .bold {
   font-weight: bold;
@@ -48,12 +48,12 @@ a {
   text-decoration: underline;
   background-color: none; /*rgba(251, 204, 92, 0.7);*/
   text-decoration-color: var(--sky);
-  padding: 5px 10px;
+  
   color: black;
   display: block;
   margin-top: 10px;
-  text-decoration-thickness: 2px; /* Adjusting underline thickness */
-  text-underline-offset: 2px; /* Adjusting underline offset */
+  text-decoration-thickness: 4px; /* Adjusting underline thickness */
+  text-underline-offset: 4px; /* Adjusting underline offset */
   font-size: 16px;
 }
 
