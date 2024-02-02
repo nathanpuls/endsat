@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 Redirect</title>
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      text-align: center;
+      margin: 0;
+    }
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 10px;
+    }
+    p {
+      font-size: 1.2rem;
+      margin-bottom: 20px;
+    }
+    #currentPath {
+      font-size: 3rem;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+  <h1 id="currentPath"></h1>
+  <h1 id="randomPhrase">Loading...</h1>
+  
+
+  <script>
+    // Array of phrases without dynamic path
+    const phrases = [
+      "we have lift off",
+      "pedal to the metal",
+      "takin' you there",
+      "stepping on it",
+      "here we go!",
+      "zoom! zoom!",
+      "full speed ahead!",
+      "beep, beep!",
+      "straight away!",
+      "on our way!"
+    ];
+
+    // Function to select a random phrase
+    function getRandomPhrase(arr) {
+      const randomIndex = Math.floor(Math.random() * arr.length);
+      return arr[randomIndex];
+    }
+
+    // Set random phrase and currentPath on page load
+    document.addEventListener("DOMContentLoaded", function() {
+      // Extract the path from the URL and remove slashes
+      const currentPath = window.location.pathname.replace(/\//g, '');
+      document.getElementById("currentPath").textContent = `${currentPath}`;
+      
+      // Exclude the phrase with currentPath
+      const phrasesWithoutCurrentPath = phrases.filter(phrase => !phrase.includes(currentPath));
+
+      const randomPhrase = getRandomPhrase(phrasesWithoutCurrentPath);
+      document.getElementById("randomPhrase").textContent = randomPhrase;
+
+      window.location.href = `https://${currentPath}.ends.at`; //comment out for testing
+    });
+  </script>
+</body>
+</html>
