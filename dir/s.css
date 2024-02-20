@@ -1,0 +1,23 @@
+#contactList {
+  font-family: Arial, sans-serif;
+  width: 50%;
+  margin: auto;
+}
+#row {
+  display: flex;
+}
+
+#filterInput {
+  margin-bottom: 10px;
+}
+
+.contactItem {
+  margin-bottom: 5px;
+}
+button {
+  margin-left: 5px;
+}
+input {
+  width: 200px !important;
+  margin-bottom: 10px;
+}
