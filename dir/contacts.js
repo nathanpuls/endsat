@@ -33,6 +33,7 @@ const contacts = {
   "Kitchen/Dining": "5655, 5650",
   "Mail Room": "5190",
   Marketing: "5060",
+  "Multipurpose Room": "5167",
   "Menninger 360 office": "5031",
   "Navigator recovery program": "5422",
   "On-call Internist": "5400",
