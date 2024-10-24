@@ -5,6 +5,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ends.at</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet"> <!-- Link to Poppins font -->
     <style>
         /* Modern styling */
         * {
@@ -14,7 +15,7 @@
         }
 
         body {
-            font-family: 'Helvetica Neue', Arial, sans-serif;
+            font-family: 'Poppins', sans-serif; /* Updated to use Poppins font */
             height: 100vh;
             display: flex;
             justify-content: center;
@@ -28,7 +29,6 @@
             background: #fff;
             padding: 20px 40px;
             border-radius: 12px;
-            /* box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); */
             text-align: center;
             width: 100%;
             max-width: 400px;
@@ -44,56 +44,56 @@
             width: 100%;
             padding: 10px;
             font-size: 16px;
+            font-family: 'Poppins', sans-serif; /* Set Poppins font for input */
             border: 1px solid #ccc;
             border-radius: 8px;
             border-color: #8b8b8b;
             margin-bottom: 15px;
             margin-top: 15px;
-            
         }
 
         input[type="text"]:focus {
-    outline: 0px solid black; /* Change the outline color to black */
-}
+            outline: 0px solid black;
+        }
 
         #convertedLinkContainer {
             margin-top: 15px;
         }
 
         #convertedLinkDisplay {
-    font-size: 24px;
-    font-weight: bold;
-    color: #000000;
-    text-decoration: none;
-    word-wrap: break-word; /* Allow long words to break */
-    overflow-wrap: break-word; /* Ensure long words break at the container boundary */
-    white-space: normal; /* Allow normal wrapping behavior */
-}
-
+            font-size: 24px;
+            font-weight: bold;
+            color: #000000;
+            text-decoration: none;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            white-space: normal;
+        }
 
         #copyMessage {
+            position: fixed; /* Fix the position */
+            top: 20px; /* Position at the top */
+            right: 20px; /* Position on the right */
             color: #28a745;
             font-style: italic;
-            margin-top: 10px;
+            margin: 10px;
             font-size: 16px;
+            
         }
 
         .hidden {
             display: none;
-            
         }
     </style>
 </head>
 <body>
 
     <div class="container">
-        <!-- <h2>ends.at</h2> -->
         <p><a href="#" id="convertedLinkDisplay">ends.at/</a></p>
         <input type="text" id="googleUrlInput" placeholder="Enter search" autofocus>
 
         <div id="convertedLinkContainer">
-            
-            <p id="copyMessage" class="hidden">Copied!</p>
+            <p id="copyMessage" class="hidden">Copied URL</p>
         </div>
     </div>
 
@@ -104,6 +104,17 @@
 
         // Add an event listener to update the link and copy in real-time as the user types
         googleUrlInput.addEventListener('input', updateAndCopyLink);
+
+        // Add an event listener for the Enter key to navigate to the URL
+        googleUrlInput.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); // Prevent form submission if needed
+                const searchText = googleUrlInput.value.trim();
+                if (searchText) {
+                    window.location.href = `https://ends.at/${encodeURIComponent(searchText).replace(/%20/g, '+')}`;
+                }
+            }
+        });
 
         function updateAndCopyLink() {
             // Get the value of the input field
