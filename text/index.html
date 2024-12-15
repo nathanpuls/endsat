@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text Links</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@400&display=swap');
+        html, body {
+            height: 100%; /* Ensure body takes up the full height */
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            color: black;
+            white-space: pre-wrap; /* Preserves newlines */
+        }
+
+        a {
+            color: black;
+            text-decoration: underline;
+        }
+
+        h3 {
+            font-size: 1.5em;
+            margin-bottom: 0.5em;
+            margin-top: 0;
+            display: block;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            color: black;
+            white-space: pre-wrap;
+            margin: 0;
+            background-color: #ffffff; /* Light background to see the layout */
+        }
+
+        #content {
+            padding: 20px;
+            margin-top: -50px;
+        }
+    </style>
+</head>
+<body>
+    <div id="content"></div>
+    <script>
+        // Function to get URL query parameter by name
+        function getQueryParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        async function loadText() {
+            // Get the 'name' query parameter from the URL
+            const fileName = getQueryParameter('name');
+            if (!fileName) {
+                console.error('No "name" parameter found in URL');
+                return;
+            }
+
+            // Construct the URL to fetch the text file (assumes files are named as <name>.txt)
+            const response = await fetch(`${fileName}.txt`);
+            if (!response.ok) {
+                console.error('Error loading text file:', response.statusText);
+                return;
+            }
+
+            const text = await response.text();
+
+            // Split lines and process each line
+            const lines = text.split('\n');
+            let content = '';
+
+            lines.forEach(line => {
+                if (line.startsWith('#')) {
+                    // Create <h3> for lines starting with #
+                    content += `<h3>${line.slice(1).trim()}</h3>`; // Remove '#' and trim
+                } else {
+                    // Process links in other lines
+                    content += line.replace(
+                        /\[([^\]]+)\]\(([^)]+)\)/g,
+                        (match, text, url) => {
+                            // If the URL doesn't start with http:// or https://, add http://
+                            if (!/^https?:\/\//i.test(url)) {
+                                url = 'http://' + url;
+                            }
+                            return `<a href="${url}">${text}</a>`;
+                        }
+                    ) + '\n'; // Preserve newlines
+                }
+            });
+
+            // Insert the processed content into the page
+            document.getElementById('content').innerHTML = content;
+        }
+
+        loadText().catch(error => {
+            console.error('Error loading text file:', error);
+        });
+    </script>
+</body>
+</html>
