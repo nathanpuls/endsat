@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>New Page</title>
+  <title></title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
@@ -72,7 +72,7 @@
       history.replaceState(null, '', newUrl);
 
       // Update page title based on the name input
-      document.title = name || 'New Page';
+      document.title = name || '';
 
       // Show placeholders if the content is empty
       if (name === '') {
@@ -112,21 +112,21 @@
       } else {
         document.getElementById('text').removeAttribute('placeholder');
       }
-
-      // Conditionally set autofocus if title is empty
-      if (!name) {
-        document.getElementById('name').focus();
-      }
     }
 
-    // Initial content update
-    updateContentFromURL();
+    // Initialize content and title on page load
+    document.addEventListener('DOMContentLoaded', function () {
+      updateContentFromURL();  // Ensure title and content are correct on load
 
-    // Add event listeners to update URL and page title on input
-    document.getElementById('name').addEventListener('input', updateURLParams);
-    document.getElementById('text').addEventListener('input', updateURLParams);
+      // Sync title changes with contenteditable fields
+      document.getElementById('name').addEventListener('input', function() {
+        updateURLParams();
+        // Force the title to be updated immediately as the user types
+        document.title = document.getElementById('name').innerText.trim() || 'New Page';
+      });
+      document.getElementById('text').addEventListener('input', updateURLParams);
+    });
+
   </script>
-
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"8f2b4382fe274612","version":"2024.10.5","r":1,"token":"e6d5d685b5bc49f59c29b2e2c6189b10","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}' crossorigin="anonymous"></script>
 </body>
 </html>
