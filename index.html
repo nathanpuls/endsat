@@ -1,1 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>New Page</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100;200;300;400;500;600;700;800;900&display=swap');
 
+    body {
+      font-family: 'Outfit', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #fff;
+      color: #000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      padding: 20px;
+    }
+
+    h3, p {
+      margin: 0;
+      line-height: 1.5;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .editable {
+      outline: none;
+      border: none;
+      background: transparent;
+      font-size: inherit;
+      color: inherit;
+      font-family: inherit;
+      text-align: left;
+      padding: 5px 10px;
+    }
+
+    h3.editable {
+      font-size: 1.2rem;
+      font-weight: 600;
+    }
+
+    p.editable {
+      font-size: 1rem;
+    }
+
+    .editable[contenteditable="true"]:empty:before {
+      content: attr(placeholder);
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+
+  <h3 id="name" class="editable" contenteditable="true" placeholder="Page Name"></h3>
+  <p id="text" class="editable" contenteditable="true" placeholder="Start writing here..."></p>
+
+  <script>
+    // Function to update URL parameters and handle placeholder visibility
+    function updateURLParams() {
+      const nameElement = document.getElementById('name');
+      const textElement = document.getElementById('text');
+      const name = nameElement.innerText.trim();
+      const text = textElement.innerText.trim();
+      const params = new URLSearchParams();
+      params.set('name', name);
+      params.set('text', text);
+      const newUrl = `${window.location.pathname}?${params.toString()}`;
+      history.replaceState(null, '', newUrl);
+
+      // Update page title based on the name input
+      document.title = name || 'New Page';
+
+      // Show placeholders if the content is empty
+      if (name === '') {
+        nameElement.setAttribute('placeholder', 'Page Name');
+      } else {
+        nameElement.removeAttribute('placeholder');
+      }
+
+      if (text === '') {
+        textElement.setAttribute('placeholder', 'Start writing here...');
+      } else {
+        textElement.removeAttribute('placeholder');
+      }
+    }
+
+    // Function to update page content based on URL parameters
+    function updateContentFromURL() {
+      const params = new URLSearchParams(window.location.search);
+      const name = params.get('name') || '';
+      const text = params.get('text') || '';
+
+      document.getElementById('name').innerText = name;
+      document.getElementById('text').innerText = text;
+
+      // Set the page title based on the name parameter
+      document.title = name || 'New Page';
+
+      // If content is empty, show placeholders
+      if (!name) {
+        document.getElementById('name').setAttribute('placeholder', 'Page Name');
+      } else {
+        document.getElementById('name').removeAttribute('placeholder');
+      }
+
+      if (!text) {
+        document.getElementById('text').setAttribute('placeholder', 'Start writing here...');
+      } else {
+        document.getElementById('text').removeAttribute('placeholder');
+      }
+
+      // Conditionally set autofocus if title is empty
+      if (!name) {
+        document.getElementById('name').focus();
+      }
+    }
+
+    // Initial content update
+    updateContentFromURL();
+
+    // Add event listeners to update URL and page title on input
+    document.getElementById('name').addEventListener('input', updateURLParams);
+    document.getElementById('text').addEventListener('input', updateURLParams);
+  </script>
+
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"8f2b4382fe274612","version":"2024.10.5","r":1,"token":"e6d5d685b5bc49f59c29b2e2c6189b10","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}' crossorigin="anonymous"></script>
+</body>
+</html>
