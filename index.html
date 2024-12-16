@@ -51,6 +51,27 @@
       content: attr(placeholder);
       color: #aaa;
     }
+
+    /* Mobile Responsiveness */
+    @media (max-width: 768px) {
+      h3.editable {
+        font-size: 1.5rem;  /* Increase font size for mobile */
+      }
+
+      p.editable {
+        font-size: 1.2rem;  /* Increase font size for mobile */
+      }
+    }
+
+    @media (max-width: 480px) {
+      h3.editable {
+        font-size: 1.8rem;  /* Larger font size for very small screens */
+      }
+
+      p.editable {
+        font-size: 1.4rem;  /* Larger font size for very small screens */
+      }
+    }
   </style>
 </head>
 <body>
@@ -98,7 +119,7 @@
       document.getElementById('text').innerText = text;
 
       // Set the page title based on the name parameter
-      document.title = name || 'New Page';
+      document.title = name || '';
 
       // If content is empty, show placeholders
       if (!name) {
@@ -122,7 +143,7 @@
       document.getElementById('name').addEventListener('input', function() {
         updateURLParams();
         // Force the title to be updated immediately as the user types
-        document.title = document.getElementById('name').innerText.trim() || 'New Page';
+        document.title = document.getElementById('name').innerText.trim() || '';
       });
       document.getElementById('text').addEventListener('input', updateURLParams);
     });
