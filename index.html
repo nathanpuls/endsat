@@ -1,10 +1,11 @@
 
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title></title>
+  <title>ends.at</title>
   <link
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
@@ -15,7 +16,7 @@
   <style>
 
 :root {
-  --theme: #000000; /* Yellow background color */
+  --theme: #ffffff; 
 }
 
     body {
@@ -57,7 +58,7 @@ h3 i {
   font-size: 16px;
   width: 80%;
   max-width: 250px;
-  border: 2px solid var(--theme);
+  border: 2px solid black;
   border-radius: 25px;
   outline: none;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
@@ -67,7 +68,7 @@ h3 i {
 }
 
     #search-bar:focus {
-      border-color: var(--theme); /* Lighter coral on focus */
+      border-color: black; /* Lighter coral on focus */
       box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
     }
 
@@ -91,6 +92,7 @@ h3 i {
       list-style-type: none; /* Removes bullets */
       padding: 0;
       margin: 20px 0;
+      border-color: #000000;
     }
 
     li {
@@ -99,14 +101,16 @@ h3 i {
 
     a {
       text-decoration: none;
+      border: 2px solid black;
       font-weight: 600;
-      color: #fff;
+      color: #000000;
       background-color: var(--theme); /* Bright coral */
       padding: 10px 20px;
       border-radius: 25px;
       display: inline-block;
       transition: all 0.3s ease;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border-color: black;
     }
 
     a:hover {
@@ -122,6 +126,7 @@ h3 i {
   box-shadow: none; /* Remove shadow */
   color: inherit; /* Inherit the text color */
   display: block; 
+  border: none;
 }
 
 footer {
@@ -154,7 +159,7 @@ footer {
 </head>
 <body>
     <a href="#" id="home-link">
-        <h3 id="name">
+        <h3 id="name">ends.at
           <!-- <img
             src="https://nathanpuls.com/yum/cupcake.png"
             alt="logo"
@@ -173,26 +178,17 @@ footer {
     autofocus
   />
 
-  <footer>
+  <!-- <footer>
     <a href="https://link.ends.at/about" id="about-link">About</a>
   </footer>
-  
+   -->
 
   <script>
     
-    // Function to extract query parameter values
-    function getQueryParam(param) {
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get(param);
-    }
+   
 
     // Dynamically set the collection ID
-    const collectionId = getQueryParam("id");
-    if (!collectionId) {
-      console.error("Collection ID is missing in the URL!");
-      alert("Error: Collection ID is required. Please include ?id= in the URL.");
-      throw new Error("Missing collection ID.");
-    }
+    const collectionId = 50593298;
 
     const apiEndpoint = `https://api.raindrop.io/rest/v1/raindrops/${collectionId}`;
     const authToken = "Bearer 0f1d16de-033f-4d92-9a50-e37992ed9b94";
@@ -206,50 +202,52 @@ footer {
     };
 
     fetch(apiEndpoint, requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        // Sort items alphabetically by title
-        const sortedItems = data.items.sort((a, b) => {
-          const titleA = (a.title || a.link).toLowerCase();
-          const titleB = (b.title || b.link).toLowerCase();
-          return titleA.localeCompare(titleB);
-        });
+  .then((response) => response.json())
+  .then((data) => {
+    // Sort items alphabetically by title
+    const sortedItems = data.items.sort((a, b) => {
+      const titleA = (a.title || a.link).toLowerCase();
+      const titleB = (b.title || b.link).toLowerCase();
+      return titleA.localeCompare(titleB);
+    });
 
-        const linkList = document.createElement("ul");
-        linkList.id = "link-list";
+    const linkList = document.createElement("ul");
+    linkList.id = "link-list";
 
-        sortedItems.forEach((item) => {
-          const listItem = document.createElement("li");
-          const link = document.createElement("a");
-          link.href = item.link;
-         // link.target = "_blank";
-          link.textContent = item.title || item.link;
+    sortedItems.forEach((item) => {
+      const listItem = document.createElement("li");
+      listItem.style.display = "none"; // Initially hide all links
 
-          listItem.appendChild(link);
-          linkList.appendChild(listItem);
-        });
+      const link = document.createElement("a");
+      link.href = item.link;
+      link.textContent = item.title || item.link;
 
-        document.body.appendChild(linkList);
+      listItem.appendChild(link);
+      linkList.appendChild(listItem);
+    });
 
-        // Implement search bar filtering
-        const searchBar = document.getElementById("search-bar");
-        searchBar.addEventListener("keyup", (event) => {
-          const filterText = event.target.value.toLowerCase();
-          const listItems = document.querySelectorAll("#link-list li");
+    document.body.appendChild(linkList);
 
-          listItems.forEach((listItem) => {
-            const linkText = listItem.textContent.toLowerCase();
-            if (linkText.includes(filterText)) {
-              listItem.style.display = ""; // Show the item
-            } else {
-              listItem.style.display = "none"; // Hide the item
-            }
-          });
-        });
-      })
-      .catch((error) => {
-        console.error("Error fetching API data:", error);
+    // Implement search bar filtering
+    const searchBar = document.getElementById("search-bar");
+    searchBar.addEventListener("keyup", (event) => {
+      const filterText = event.target.value.toLowerCase();
+      const listItems = document.querySelectorAll("#link-list li");
+
+      listItems.forEach((listItem) => {
+        const linkText = listItem.textContent.toLowerCase();
+        if (linkText.includes(filterText)) {
+          listItem.style.display = ""; // Show matching items
+        } else {
+          listItem.style.display = "none"; // Hide non-matching items
+        }
       });
+    });
+  })
+  .catch((error) => {
+    console.error("Error fetching API data:", error);
+  });
+
 
     // Function to capitalize the first letter of each word
     function capitalizeWords(string) {
@@ -260,45 +258,7 @@ footer {
         .join(' '); // Rejoin the words
     }
 
-    // Update title and h3 based on 'name' parameter
-    const rawName = getQueryParam('name');
-    if (rawName) {
-      const capitalizedName = capitalizeWords(rawName); // URLSearchParams auto-decodes
-      document.title = capitalizedName; // Update the page title
-
-      // Get the h3 element and append the text without removing the image
-      const nameElement = document.getElementById('name');
-      const textNode = document.createTextNode(` ${capitalizedName}`); // Add a space before the name
-      nameElement.appendChild(textNode); // Add the capitalized name after the image
-    }
-
-    // Check for 'bg' parameter and apply background color
-    const bgColor = getQueryParam('bg');
-if (bgColor) {
-  document.body.style.backgroundColor = `#${bgColor}`; // Add the '#' symbol dynamically
-}
-
-   // Check for 'theme' parameter and apply theme color
-   const theme = getQueryParam('theme');
-if (theme) {
-    document.documentElement.style.setProperty('--theme', `#${theme}`);
-}
-
-
-// Get the icon class name from the URL (e.g., fa-cupcake)
-const iconParam = getQueryParam("icon");
-
-const iconPlaceholder = document.getElementById("icon-placeholder");
-
-if (iconParam) {
-  // Add the Font Awesome class dynamically to the span
-  iconPlaceholder.innerHTML = `<i class="fas fa-${iconParam}"></i>`;
- } //else {
-//   // Default icon if no parameter is passed
-//   iconPlaceholder.innerHTML = '<i class="fas fa-heart"></i>'; // Example default icon
-// }
-
-//iconPlaceholder.innerHTML = '<i class="fas fa-cookie"></i>'; // Just a test icon
+    
 
 document.getElementById('home-link').addEventListener('click', (event) => {
   event.preventDefault(); // Prevent the default link behavior
@@ -307,5 +267,6 @@ document.getElementById('home-link').addEventListener('click', (event) => {
 
   </script>
 <script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"8f332c3b9d1c0b76","version":"2024.10.5","r":1,"token":"e6d5d685b5bc49f59c29b2e2c6189b10","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}' crossorigin="anonymous"></script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"8f33345e7acb2e24","version":"2024.10.5","r":1,"token":"e6d5d685b5bc49f59c29b2e2c6189b10","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}' crossorigin="anonymous"></script>
 </body>
 </html>
