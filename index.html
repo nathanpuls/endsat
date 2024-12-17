@@ -1,0 +1,311 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title></title>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+  />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+
+  <style>
+
+:root {
+  --theme: #000000; /* Yellow background color */
+}
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      /*background-color: #fff9c4; /* Light yellow background */
+      margin: 15;
+      padding: 0;
+      text-align: center;
+    }
+
+    h3 {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 400;
+      margin: 20px 0;
+      color: black;
+    }
+
+    #icon-placeholder {
+  margin-right: 10px; /* Space between the icon and text */
+  margin-bottom: 0px;;
+  font-size: 24px; /* Adjust size of the icon */
+  color: var(--theme);
+}
+
+h3 i {
+  font-size: 24px; /* Adjust Font Awesome icon size */
+}
+
+    img {
+      margin-right: -5px;
+      margin-left: 5px;
+    }
+
+    #search-bar {
+  margin: 0px auto;
+  padding: 0px 15px; /* Adjust the padding here */
+  font-size: 16px;
+  width: 80%;
+  max-width: 250px;
+  border: 2px solid var(--theme);
+  border-radius: 25px;
+  outline: none;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  height: 45px; /* Set a fixed height */
+  font-family: 'Outfit', sans-serif; /* Use Outfit font */
+}
+
+    #search-bar:focus {
+      border-color: var(--theme); /* Lighter coral on focus */
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    #search-bar::placeholder {
+  color: var(--theme); /* Use theme color for placeholder */
+  opacity: 1; /* Ensure the placeholder is fully visible */
+  transition: color 0.3s ease; /* Add a smooth transition for any changes */
+}
+
+
+    h3 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700; /* Increase the font weight to make it bolder */
+  margin: 20px 0;
+}
+
+
+    ul {
+      list-style-type: none; /* Removes bullets */
+      padding: 0;
+      margin: 20px 0;
+    }
+
+    li {
+      margin: 15px 0;
+    }
+
+    a {
+      text-decoration: none;
+      font-weight: 600;
+      color: #fff;
+      background-color: var(--theme); /* Bright coral */
+      padding: 10px 20px;
+      border-radius: 25px;
+      display: inline-block;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    a:hover {
+      background-color: var(--theme); /* Slightly lighter coral on hover */
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.2);
+    }
+
+/* General link styling, if any, should not apply to #home-link */
+#home-link {
+  text-decoration: none; /* Remove underline */
+  background-color: transparent; /* No background */
+  padding: 0; /* No padding */
+  box-shadow: none; /* Remove shadow */
+  color: inherit; /* Inherit the text color */
+  display: block; 
+}
+
+footer {
+  position: fixed;
+  bottom: 10px; /* Adjust the distance from the bottom */
+  width: 100%;
+  text-align: center;
+}
+
+#about-link {
+  text-decoration: none; /* Remove underline */
+  font-size: 0.7em; /* Make it small */
+  color: rgb(0, 0, 0); /* Use a neutral color */
+  font-weight: normal; /* Plain weight */
+  padding: 0; /* No padding */
+  margin: 0;
+  background: none; /* No background */
+  border: none; /* No border */
+  box-shadow: none;
+}
+
+#about-link:hover {
+  
+  color: black; /* Slightly darken the color on hover */
+}
+
+
+
+  </style>
+</head>
+<body>
+    <a href="#" id="home-link">
+        <h3 id="name">
+          <!-- <img
+            src="https://nathanpuls.com/yum/cupcake.png"
+            alt="logo"
+            height="50px"
+          /> -->
+          <span id="icon-placeholder"></span>
+        </h3>
+      </a>
+      
+      
+
+  <input
+    type="text"
+    id="search-bar"
+    placeholder="Search"
+    autofocus
+  />
+
+  <footer>
+    <a href="https://link.ends.at/about" id="about-link">About</a>
+  </footer>
+  
+
+  <script>
+    
+    // Function to extract query parameter values
+    function getQueryParam(param) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(param);
+    }
+
+    // Dynamically set the collection ID
+    const collectionId = getQueryParam("id");
+    if (!collectionId) {
+      console.error("Collection ID is missing in the URL!");
+      alert("Error: Collection ID is required. Please include ?id= in the URL.");
+      throw new Error("Missing collection ID.");
+    }
+
+    const apiEndpoint = `https://api.raindrop.io/rest/v1/raindrops/${collectionId}`;
+    const authToken = "Bearer 0f1d16de-033f-4d92-9a50-e37992ed9b94";
+
+    const requestOptions = {
+      method: "GET",
+      headers: new Headers({
+        Authorization: authToken,
+      }),
+      redirect: "follow",
+    };
+
+    fetch(apiEndpoint, requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        // Sort items alphabetically by title
+        const sortedItems = data.items.sort((a, b) => {
+          const titleA = (a.title || a.link).toLowerCase();
+          const titleB = (b.title || b.link).toLowerCase();
+          return titleA.localeCompare(titleB);
+        });
+
+        const linkList = document.createElement("ul");
+        linkList.id = "link-list";
+
+        sortedItems.forEach((item) => {
+          const listItem = document.createElement("li");
+          const link = document.createElement("a");
+          link.href = item.link;
+         // link.target = "_blank";
+          link.textContent = item.title || item.link;
+
+          listItem.appendChild(link);
+          linkList.appendChild(listItem);
+        });
+
+        document.body.appendChild(linkList);
+
+        // Implement search bar filtering
+        const searchBar = document.getElementById("search-bar");
+        searchBar.addEventListener("keyup", (event) => {
+          const filterText = event.target.value.toLowerCase();
+          const listItems = document.querySelectorAll("#link-list li");
+
+          listItems.forEach((listItem) => {
+            const linkText = listItem.textContent.toLowerCase();
+            if (linkText.includes(filterText)) {
+              listItem.style.display = ""; // Show the item
+            } else {
+              listItem.style.display = "none"; // Hide the item
+            }
+          });
+        });
+      })
+      .catch((error) => {
+        console.error("Error fetching API data:", error);
+      });
+
+    // Function to capitalize the first letter of each word
+    function capitalizeWords(string) {
+      if (!string) return ''; // Handle null or empty string
+      return string
+        .split(' ') // Split into words
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()) // Capitalize each word
+        .join(' '); // Rejoin the words
+    }
+
+    // Update title and h3 based on 'name' parameter
+    const rawName = getQueryParam('name');
+    if (rawName) {
+      const capitalizedName = capitalizeWords(rawName); // URLSearchParams auto-decodes
+      document.title = capitalizedName; // Update the page title
+
+      // Get the h3 element and append the text without removing the image
+      const nameElement = document.getElementById('name');
+      const textNode = document.createTextNode(` ${capitalizedName}`); // Add a space before the name
+      nameElement.appendChild(textNode); // Add the capitalized name after the image
+    }
+
+    // Check for 'bg' parameter and apply background color
+    const bgColor = getQueryParam('bg');
+if (bgColor) {
+  document.body.style.backgroundColor = `#${bgColor}`; // Add the '#' symbol dynamically
+}
+
+   // Check for 'theme' parameter and apply theme color
+   const theme = getQueryParam('theme');
+if (theme) {
+    document.documentElement.style.setProperty('--theme', `#${theme}`);
+}
+
+
+// Get the icon class name from the URL (e.g., fa-cupcake)
+const iconParam = getQueryParam("icon");
+
+const iconPlaceholder = document.getElementById("icon-placeholder");
+
+if (iconParam) {
+  // Add the Font Awesome class dynamically to the span
+  iconPlaceholder.innerHTML = `<i class="fas fa-${iconParam}"></i>`;
+ } //else {
+//   // Default icon if no parameter is passed
+//   iconPlaceholder.innerHTML = '<i class="fas fa-heart"></i>'; // Example default icon
+// }
+
+//iconPlaceholder.innerHTML = '<i class="fas fa-cookie"></i>'; // Just a test icon
+
+document.getElementById('home-link').addEventListener('click', (event) => {
+  event.preventDefault(); // Prevent the default link behavior
+  window.location.reload(); // Reload the page
+});
+
+  </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"8f332c3b9d1c0b76","version":"2024.10.5","r":1,"token":"e6d5d685b5bc49f59c29b2e2c6189b10","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}' crossorigin="anonymous"></script>
+</body>
+</html>
