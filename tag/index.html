@@ -10,10 +10,6 @@
   />
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
   <style>
-
-    * {
-      font-family: 'Poppins', sans-serif;
-    }
     body {
       font-family: 'Poppins', sans-serif;
       text-align: center;
@@ -21,66 +17,76 @@
       padding: 0;
     }
 
-    #links-container {
-      margin-top: 20px;
+    #search-container {
+      position: relative;
+      display: inline-block;
+      width: 100%;
       max-width: 300px;
-      margin: 0 auto;
     }
 
-    .link-item {
-      padding: 5px;
-      
-    }
-
-    .link-item a {
-      display: block;
-      padding: 10px;
-      border: 2px solid black;
-      background-color: white;
-      color: black;
+    #search-bar {
+      font-family: 'Poppins', sans-serif;
+      padding: 10px 15px;
       font-size: 16px;
-      text-align: center;
-      text-decoration: none;
+      width: 100%;
+      border: 2px solid black;
+      box-sizing: border-box;
       border-radius: 30px;
-      margin: 0px 0;
-      transition: all 0.3s ease;
+      outline: none;
     }
 
-    .link-item a:hover {
-      background-color: black;
-      color: white;
+    #suggestions {
+      position: absolute;
+      font-size: 16px;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+      border: 1px solid #ccc;
+      border-radius: 30px;
+      background-color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      display: none;
+      box-sizing: border-box;
+    }
+
+    #suggestions li {
+      margin: 0; /* Remove margins from <li> */
+      padding: 0; /* Remove padding from <li> */
+    }
+
+    #suggestions li a {
+      display: block; /* Make <a> fill the <li> */
+        padding: 10px 15px;
+      text-align: left; /* Left-align the text */
+      text-decoration: none;
+      color: black;
+      width: 100%;
+      white-space: normal; /* Allow text to wrap */
+      word-wrap: break-word; /* Wrap long words */
+      box-sizing: border-box; /* Prevent any overflow issues */
+    }
+
+    #suggestions li:hover {
+      background-color: #f0f0f0;
+      border-radius: 30px;
     }
 
     #brand {
       text-decoration: none;
       color: black;
     }
-
-    #brand-container {
-        margin: 10px;
-    }
-
-    #brand  {
-      
-      color: black;
-      background-color: none;
-    }
-
-    #tag-name {
-      margin: 0px;
-      font-weight: 900;
-      font-size: 1em;
-      color: black;
-    }
   </style>
 </head>
 <body>
-    <div id="brand-container">
-  <a href="/" id="brand" onclick="clearAndFocusSearch()"><span id="brand">ends.at</span></a>
-</div>
-  <span id="tag-name"></span>
-  
-  <div id="links-container"></div>
+  <a href="javascript:void(0);" id="brand" onclick="clearAndFocusSearch()"><h2>ends.at</h2></a>
+  <div id="search-container">
+    <input type="text" id="search-bar" placeholder="Search links" autofocus autocomplete="off"/>
+    <ul id="suggestions"></ul>
+  </div>
 
   <script>
     const collectionId = 50593298;
@@ -94,62 +100,64 @@
       }),
     };
 
-    let linksList = [];
+    let suggestionsList = [];
 
-    // Get the tag from the URL parameter
-    const urlParams = new URLSearchParams(window.location.search);
-    const tagFilter = urlParams.get('tag') || '';
-
-    // Fetch data and populate linksList
+    // Fetch data and populate suggestionsList
     fetch(apiEndpoint, requestOptions)
       .then((response) => response.json())
       .then((data) => {
-        linksList = data.items.filter((item) => {
-          // Filter links based on tag if present
-          return item.tags && item.tags.some(tag => tag.toLowerCase() === tagFilter.toLowerCase());
-        });
-
-        // Display the filtered links
-        displayLinks();
+        suggestionsList = data.items.map((item) => ({
+          title: item.title || item.link,
+          link: item.link,
+        }));
       })
       .catch((error) => console.error("Error fetching data:", error));
 
-    function displayLinks() {
-      const linksContainer = document.getElementById('links-container');
-      linksContainer.innerHTML = ''; // Clear previous results
+    const searchBar = document.getElementById("search-bar");
+    const suggestions = document.getElementById("suggestions");
 
-      if (linksList.length > 0) {
-        linksList.forEach((item) => {
-          const linkItem = document.createElement('div');
-          linkItem.classList.add('link-item');
-          const link = document.createElement('a');
+    searchBar.addEventListener("keyup", (event) => {
+      const filterText = event.target.value.toLowerCase();
+      suggestions.innerHTML = "";
+
+      if (filterText) {
+        // Filter suggestions based on words starting with the search term
+        const filtered = suggestionsList.filter((item) =>
+          item.title
+            .toLowerCase()
+            .split(" ")
+            .some((word) => word.startsWith(filterText))
+        );
+
+        filtered.forEach((item) => {
+          const listItem = document.createElement("li");
+          const link = document.createElement("a");
           link.href = item.link;
-          link.textContent = item.title || item.link;
-          linkItem.appendChild(link);
-          linksContainer.appendChild(linkItem);
+          link.textContent = item.title;
+
+          listItem.appendChild(link);
+          suggestions.appendChild(listItem);
         });
+
+        suggestions.style.display = filtered.length > 0 ? "block" : "none";
       } else {
-        linksContainer.innerHTML = '<p>No links found for this tag.</p>';
+        suggestions.style.display = "none";
       }
-    }
+    });
 
-    capitalizeEachWord = (string) => {
-  return string
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-};
+    // Hide suggestions when clicking outside
+    document.addEventListener("click", (event) => {
+      if (event.target !== searchBar) {
+        suggestions.style.display = "none";
+      }
+    });
 
-
-    geturlparams = () => {
-      const urlParams = new URLSearchParams(window.location.search);
-      const tag = urlParams.get('tag') || '';
-      document.getElementById('tag-name').innerText = tag.toUpperCase();
-    }
-
-    geturlparams();
-
-
+    // Allow suggestions to reappear on focus
+    searchBar.addEventListener("focus", () => {
+      if (searchBar.value && suggestions.innerHTML) {
+        suggestions.style.display = "block";
+      }
+    });
 
     function clearAndFocusSearch() {
       const searchBar = document.getElementById('search-bar');
