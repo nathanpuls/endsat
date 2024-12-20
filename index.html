@@ -22,12 +22,11 @@
       display: inline-block;
       width: 100%;
       max-width: 300px;
-      
     }
 
     #search-bar {
       font-family: 'Poppins', sans-serif;
-      padding: 10px 8px;
+      padding: 10px 15px;
       font-size: 16px;
       width: 100%;
       border: 2px solid black;
@@ -55,23 +54,25 @@
     }
 
     #suggestions li {
-      padding: 10px;
-      cursor: pointer;
-      text-align: left;
+      margin: 0; /* Remove margins from <li> */
+      padding: 0; /* Remove padding from <li> */
+    }
+
+    #suggestions li a {
+      display: block; /* Make <a> fill the <li> */
+        padding: 10px 15px;
+      text-align: left; /* Left-align the text */
+      text-decoration: none;
+      color: black;
+      width: 100%;
+      white-space: normal; /* Allow text to wrap */
+      word-wrap: break-word; /* Wrap long words */
+      box-sizing: border-box; /* Prevent any overflow issues */
     }
 
     #suggestions li:hover {
       background-color: #f0f0f0;
       border-radius: 30px;
-    }
-
-    #suggestions a {
-      text-decoration: none;
-      color: black;
-    }
-
-    #suggestions a:hover {
-      text-decoration: none;
     }
 
     #brand {
@@ -159,10 +160,10 @@
     });
 
     function clearAndFocusSearch() {
-    const searchBar = document.getElementById('search-bar');
-    searchBar.value = '';
-    searchBar.focus();
-  }
+      const searchBar = document.getElementById('search-bar');
+      searchBar.value = '';
+      searchBar.focus();
+    }
   </script>
 </body>
 </html>
