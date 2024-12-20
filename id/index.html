@@ -54,9 +54,14 @@
     #brand {
       text-decoration: none;
       color: black;
+      font-size: 16px;
     }
 
     #brand-container {
+        margin: 20px;
+    }
+
+    #name-container {
         margin: 10px;
     }
 
@@ -66,8 +71,8 @@
       background-color: none;
     }
 
-    #tag-name {
-      margin: 0px;
+    #collection-name {
+      margin: 20px;
       font-weight: 900;
       font-size: 1em;
       color: black;
@@ -78,7 +83,8 @@
     <div id="brand-container">
   <a href="/" id="brand" onclick="clearAndFocusSearch()"><span id="brand">ends.at</span></a>
 </div>
-  <span id="tag-name"></span>
+<div id="name-container"><span id="collection-name"></span>
+</div>
   
   <div id="links-container"></div>
 
@@ -86,6 +92,9 @@
     // Get the collection id from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     const collectionId = urlParams.get('id'); // Getting the 'id' from the URL
+    const collectionName = urlParams.get('name');
+
+    document.getElementById('collection-name').innerText = collectionName.toUpperCase();
 
     if (!collectionId) {
       alert('Collection ID not found in URL parameters!');
