@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ends.at</title>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+  />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+
+    * {
+      font-family: 'Poppins', sans-serif;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    #links-container {
+      margin-top: 20px;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+
+    .link-item {
+      padding: 5px;
+      
+    }
+
+    .link-item a {
+      display: block;
+      padding: 10px;
+      border: 2px solid #f0f0f0;
+      background-color: white;
+      color: black;
+      font-size: 16px;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 30px;
+      margin: 0px 0;
+      transition: all 0.3s ease;
+    }
+
+    .link-item a:hover {
+      background-color: #f0f0f0;
+      color: black;
+    }
+
+    #brand {
+      text-decoration: none;
+      color: black;
+    }
+
+    #brand-container {
+        margin: 10px;
+    }
+
+    #brand  {
+      
+      color: black;
+      background-color: none;
+    }
+
+    #tag-name {
+      margin: 0px;
+      font-weight: 900;
+      font-size: 1em;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+    <div id="brand-container">
+  <a href="/" id="brand" onclick="clearAndFocusSearch()"><span id="brand">ends.at</span></a>
+</div>
+  <span id="tag-name"></span>
+  
+  <div id="links-container"></div>
+
+  <script>
+    // Get the collection id from URL parameters
+    const urlParams = new URLSearchParams(window.location.search);
+    const collectionId = urlParams.get('id'); // Getting the 'id' from the URL
+
+    if (!collectionId) {
+      alert('Collection ID not found in URL parameters!');
+      throw new Error('No collection ID provided.');
+    }
+
+    const apiEndpoint = `https://api.raindrop.io/rest/v1/raindrops/${collectionId}`;
+    const authToken = "Bearer 0f1d16de-033f-4d92-9a50-e37992ed9b94";
+
+    const requestOptions = {
+      method: "GET",
+      headers: new Headers({
+        Authorization: authToken,
+      }),
+    };
+
+    let linksList = [];
+
+    // Fetch data and populate linksList
+    fetch(apiEndpoint, requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        linksList = data.items || []; // Use all items in the collection
+
+        // Display the fetched links
+        displayLinks();
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+
+    function displayLinks() {
+      const linksContainer = document.getElementById('links-container');
+      linksContainer.innerHTML = ''; // Clear previous results
+
+      if (linksList.length > 0) {
+        linksList.forEach((item) => {
+          const linkItem = document.createElement('div');
+          linkItem.classList.add('link-item');
+          const link = document.createElement('a');
+          link.href = item.link;
+          link.textContent = item.title || item.link;
+          linkItem.appendChild(link);
+          linksContainer.appendChild(linkItem);
+        });
+      } else {
+        linksContainer.innerHTML = '<p>No links found in this collection.</p>';
+      }
+    }
+
+    function clearAndFocusSearch() {
+      const searchBar = document.getElementById('search-bar');
+      searchBar.value = '';
+      searchBar.focus();
+    }
+  </script>
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js/vcd15cbe7772f49c399c6a5babf22c1241717689176015" integrity="sha512-ZpsOmlRQV6y907TI0dKBHq9Md29nnaEIPlkf84rnaERnq6zvWvPUqr2ft8M1aS28oN72PdrCzSjY4U6VaAw1EQ==" data-cf-beacon='{"rayId":"8f52c48f9a222fd4","version":"2024.10.5","r":1,"token":"e6d5d685b5bc49f59c29b2e2c6189b10","serverTiming":{"name":{"cfExtPri":true,"cfL4":true,"cfSpeedBrain":true,"cfCacheStatus":true}}}' crossorigin="anonymous"></script>
+</body>
+</html>
