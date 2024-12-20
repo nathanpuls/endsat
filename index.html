@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ends.at</title>
+  <link
+    rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
+  />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    #search-container {
+      position: relative;
+      display: inline-block;
+      width: 100%;
+      max-width: 300px;
+      
+    }
+
+    #search-bar {
+      font-family: 'Poppins', sans-serif;
+      padding: 10px 8px;
+      font-size: 16px;
+      width: 100%;
+      border: 2px solid black;
+      box-sizing: border-box;
+      border-radius: 30px;
+      outline: none;
+    }
+
+    #suggestions {
+      position: absolute;
+      font-size: 16px;
+      top: 100%;
+      left: 0;
+      width: 100%;
+      margin: 0;
+      padding: 0;
+      list-style-type: none;
+      border: 1px solid #ccc;
+      border-radius: 30px;
+      background-color: white;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      z-index: 1000;
+      display: none;
+      box-sizing: border-box;
+    }
+
+    #suggestions li {
+      padding: 10px;
+      cursor: pointer;
+      text-align: left;
+    }
+
+    #suggestions li:hover {
+      background-color: #f0f0f0;
+      border-radius: 30px;
+    }
+
+    #suggestions a {
+      text-decoration: none;
+      color: black;
+    }
+
+    #suggestions a:hover {
+      text-decoration: none;
+    }
+
+    #brand {
+      text-decoration: none;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <a href="javascript:void(0);" id="brand" onclick="clearAndFocusSearch()"><h2>ends.at</h2></a>
+  <div id="search-container">
+    <input type="text" id="search-bar" placeholder="Search links" autofocus autocomplete="off"/>
+    <ul id="suggestions"></ul>
+  </div>
+
+  <script>
+    const collectionId = 50593298;
+    const apiEndpoint = `https://api.raindrop.io/rest/v1/raindrops/${collectionId}`;
+    const authToken = "Bearer 0f1d16de-033f-4d92-9a50-e37992ed9b94";
+
+    const requestOptions = {
+      method: "GET",
+      headers: new Headers({
+        Authorization: authToken,
+      }),
+    };
+
+    let suggestionsList = [];
+
+    // Fetch data and populate suggestionsList
+    fetch(apiEndpoint, requestOptions)
+      .then((response) => response.json())
+      .then((data) => {
+        suggestionsList = data.items.map((item) => ({
+          title: item.title || item.link,
+          link: item.link,
+        }));
+      })
+      .catch((error) => console.error("Error fetching data:", error));
+
+    const searchBar = document.getElementById("search-bar");
+    const suggestions = document.getElementById("suggestions");
+
+    searchBar.addEventListener("keyup", (event) => {
+      const filterText = event.target.value.toLowerCase();
+      suggestions.innerHTML = "";
+
+      if (filterText) {
+        // Filter suggestions based on words starting with the search term
+        const filtered = suggestionsList.filter((item) =>
+          item.title
+            .toLowerCase()
+            .split(" ")
+            .some((word) => word.startsWith(filterText))
+        );
+
+        filtered.forEach((item) => {
+          const listItem = document.createElement("li");
+          const link = document.createElement("a");
+          link.href = item.link;
+          link.textContent = item.title;
+
+          listItem.appendChild(link);
+          suggestions.appendChild(listItem);
+        });
+
+        suggestions.style.display = filtered.length > 0 ? "block" : "none";
+      } else {
+        suggestions.style.display = "none";
+      }
+    });
+
+    // Hide suggestions when clicking outside
+    document.addEventListener("click", (event) => {
+      if (event.target !== searchBar) {
+        suggestions.style.display = "none";
+      }
+    });
+
+    // Allow suggestions to reappear on focus
+    searchBar.addEventListener("focus", () => {
+      if (searchBar.value && suggestions.innerHTML) {
+        suggestions.style.display = "block";
+      }
+    });
+
+    function clearAndFocusSearch() {
+    const searchBar = document.getElementById('search-bar');
+    searchBar.value = '';
+    searchBar.focus();
+  }
+  </script>
+</body>
+</html>
