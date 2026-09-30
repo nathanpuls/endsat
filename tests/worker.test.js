@@ -9,7 +9,7 @@ function fixture(settings = [], projects = [['URL','Name','Tab','Path','Enabled'
  const fetcher=async input => {
   const url=new URL(input);calls.push(url);
   const tab=url.searchParams.get('sheet');
-  const rows=tab==='Settings'?settings:tab==='Projects (Connected Sheets)'?projects:tab==='Home'?[[home]]:tab==='Current'?[[],['go.com'],['# Named page','Hello'],['<button>Custom</button>','custom']]:[['# Old page','old']];
+  const rows=tab==='Settings'?[['Setting','Value'],...settings]:tab==='Projects (Connected Sheets)'?projects:tab==='Home'?[[home]]:tab==='Current'?[[],['go.com'],['# Named page','Hello'],['<button>Custom</button>','custom']]:[['# Old page','old']];
   return new Response(`google.visualization.Query.setResponse(${JSON.stringify({status:'ok',table:{rows:rows.map(row=>({c:row.map(v=>({v}))}))}})});`);
  };
  const worker=createWorker(fetcher);
@@ -67,4 +67,10 @@ test('HTML and redirect behavior, HEAD and method handling',async()=>{
  assert.equal(getRedirectUrl('javascript:alert(1)'),'');
  assert.equal(await (await fixture().request('/current','HEAD')).text(),'');
  assert.equal((await fixture().request('/','POST')).status,405);
+});
+test('missing tabs cannot silently use the first workbook tab',async()=>{
+ const worker=createWorker(async()=>new Response('callback({"table":{"rows":[{"c":[{"v":"# Some page"}]}]}})'));
+ const res=await worker.fetch(new Request('https://ends.at/'));
+ assert.equal(res.status,503);assert.match(await res.text(),/Settings tab is missing/);
+ assert.throws(()=>projectEntries([['# Wrong tab']]),/Projects tab is missing/);
 });

@@ -40,6 +40,7 @@ export async function readSheet(id, tab, range, fetcher = fetch, gid) {
 
 export function projectEntries(rows, masterId = SHEET_ID) {
   const headers = (rows[0] || []).map(value => String(value).trim().toLowerCase());
+  if (!headers.includes('url') || !headers.includes('name')) throw new Error('Projects tab is missing. Restore Projects (Connected Sheets) with URL and Name headers, or update projects_tab in Settings.');
   const column = (name, fallback) => headers.includes(name) ? headers.indexOf(name) : fallback;
   const used = new Set(['projects', 'projects.json', 'sheet']);
   return rows.slice(1).flatMap(row => {
@@ -115,6 +116,7 @@ async function route(request, env, fetcher) {
   // Static files stay independent of sheet availability.
   if (/\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|map|webmanifest)$/i.test(path)) return env.ASSETS.fetch(request);
   const settingsRows = await readSheet(masterId, 'Settings', 'A1:B100', fetcher);
+  if (String(settingsRows[0]?.[0] || '').trim().toLowerCase() !== 'setting') throw new Error('Settings tab is missing. Restore Settings with Setting and Value headers to reconnect the website.');
   const settings = Object.fromEntries(settingsRows.filter(row => row[0]).map(row => [String(row[0]).trim().toLowerCase(), String(row[1] ?? '').trim()]));
   const title = settings.site_title || 'ends.at';
   const getProjects = async () => projectEntries(await readSheet(masterId, settings.projects_tab || PROJECTS_TAB, 'A1:F1000', fetcher), masterId);
