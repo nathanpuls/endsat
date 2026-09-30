@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ends.at</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:680px;margin:12vh auto;padding:0 24px}h1{font-size:32px;font-weight:650;letter-spacing:-1px;margin:0 0 40px}a{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px 0;border-bottom:1px solid #eee;color:inherit;text-decoration:none}a:hover{color:#666}small{display:block;color:#888;font-size:14px;margin-top:6px;font-weight:400}.arrow{color:#999}#status{color:#777;font-size:14px}
+</style>
+</head>
+<body><main><h1>ends.at</h1><nav id="projects" aria-label="Projects"><a href="/sheet"><span>Sheet<small>Pages from Google Sheets</small></span><span class="arrow" aria-hidden="true">↗</span></a></nav><p id="status" role="status"></p></main>
+<script>
+fetch('/projects.json').then(r=>{if(!r.ok)throw new Error();return r.json()}).then(projects=>{
+ const nav=document.getElementById('projects');nav.replaceChildren();
+ for(const project of projects){
+  if(!/^\/[a-z0-9/_-]+$/i.test(project.path))continue;
+  const a=document.createElement('a');a.href=project.path;
+  const label=document.createElement('span');label.textContent=project.name;
+  if(project.description){const detail=document.createElement('small');detail.textContent=project.description;label.append(detail)}
+  const arrow=document.createElement('span');arrow.className='arrow';arrow.textContent='↗';arrow.setAttribute('aria-hidden','true');a.append(label,arrow);nav.append(a);
+ }
+}).catch(()=>{});
+</script></body></html>
