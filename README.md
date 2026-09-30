@@ -21,7 +21,7 @@ Switch home_mode to projects without deleting the saved Home content. Switch bac
 
 Page labels use the manual name in column B, HTML title, HTML/Markdown heading, redirect destination, then the cell reference (for example A7). Named options include their cell reference to distinguish duplicate titles. After changing Project, choose Page again. A stale option that is absent from the new project produces a selection error rather than silently showing another cell.
 
-The hidden `_Homepage` tab contains native formulas for project and page choices. Settings rows 8–10 are hidden formulas resolving the selection to `home_tab`, `home_cell`, and `home_project_path`; the Worker uses the connection's source URL and resolved cell. Legacy manually configured home_tab/home_cell settings still work when no Project setting exists. For pages in another workbook, supply its explicit Tab name and authorize Google's IMPORTRANGE access when prompted. `homepage-sheet-config.json` records the formulas and validation ranges for maintenance or restoration.
+The hidden `_Homepage` tab contains native formulas for project and page choices. Settings rows 8–10 contain formulas resolving the selection to `home_tab`, `home_cell`, and `home_project_path`; leave these rows visible because Google excludes hidden rows from its visualization feed. The Worker uses the connection's source URL and resolved cell. Legacy manually configured home_tab/home_cell settings still work when no Project setting exists. For pages in another workbook, supply its explicit Tab name and authorize Google's IMPORTRANGE access when prompted. `homepage-sheet-config.json` records the formulas and validation ranges for maintenance or restoration.
 
 ## Projects (Connected Sheets)
 
