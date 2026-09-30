@@ -24,3 +24,5 @@ Put a project's files under `public/<project>/` with its own `index.html`, then 
 Install dependencies, run `npm test`, then `npm run deploy`. Deployment reuses Cloudflare Worker `ends-at-text`. Root and wildcard routes both map to it. Existing databases and the older `ends-notes` Worker are retained for rollback. Only the `public` folder is exposed as assets.
 
 The previous text-library source is preserved in private repository `nathanpuls/ends-old-`. Existing text-library data remains in its original Cloudflare D1 database; it is not listed in the new project hub.
+
+Cloudflare native Git builds are connected to `nathanpuls/endsat`, branch `main`. Each push runs `npm test` and `npx wrangler deploy --config wrangler.jsonc`. GitHub Actions also runs the tests; no GitHub deployment secret is required.
