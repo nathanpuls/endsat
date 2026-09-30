@@ -1,28 +1,47 @@
 # ends.at
 
-A minimal home for independent projects and custom pages from the existing LINKSAW Google Sheet.
+The Google Sheet controls the home page, project connections, order, names, and pages:
+https://docs.google.com/spreadsheets/d/1YM3Kgc-uKrnZlvKFA9Ul-_d1NRk02FWfthSfsV0Mij8/edit
 
-## Addresses
+## Home
 
-- `/`: project index, defined by `public/projects.json`.
-- `/sheet`: automatic index of all nonempty cells in Sheet1 column A.
-- `/sheet/<name>`: page name from column B (lowercase, spaces become hyphens).
-- `/sheet/a17`: cell A17, useful for unnamed pages. Named routes take priority over cell aliases.
-- `project.ends.at/path?query`: redirects to `ends.at/project/path?query`.
+Put any HTML (including styles and scripts), Markdown, or redirect URL in **Home!A2**. Its content becomes the root home page without an added frame. The other cells in Home are left alone. Settings can point to another tab or cell.
 
-Column A accepts complete HTML including styles and scripts, Markdown, or a redirect URL. Column B is optional. Every nonempty row is included, including A1; there is no header row. Duplicate names receive a cell suffix. Sheet remains unchanged. Google may cache published values briefly; refresh after editing. Public sharing is required, as in the original Linksaw renderer.
+**Settings** uses column A for a setting and B for its value:
 
-Sheet: https://docs.google.com/spreadsheets/d/1YM3Kgc-uKrnZlvKFA9Ul-_d1NRk02FWfthSfsV0Mij8/edit
-Original renderer: https://github.com/nathanpuls/linksaw-shortcuts/blob/main/index.html
+| Setting | Default | Behavior |
+| --- | --- | --- |
+| home_mode | auto | auto uses the Home cell when filled, otherwise lists projects; projects always lists projects; content always uses Home |
+| home_tab | Home | Tab holding the home content |
+| home_cell | A2 | One cell holding home HTML, Markdown, or redirect |
+| site_title | ends.at | Title of the standard project index; custom HTML controls its own title |
+| projects_tab | Projects (Connected Sheets) | Tab holding project connections |
 
-## Adding a project
+Switch home_mode to projects without deleting the saved Home content. Switch back to auto or content to reconnect it. `/projects` always provides the standard index, and `/projects.json` provides the current public name/path/description list for custom home pages.
 
-Put a project's files under `public/<project>/` with its own `index.html`, then add a name/path/description to `public/projects.json`. Projects requiring APIs can add their routes to `worker.js`. No sheet change is needed. Project assets should use relative URLs or their own path prefix.
+## Projects (Connected Sheets)
+
+Move whole rows to reorder projects on the site. No sorting or separate order numbers.
+
+| Column | Behavior |
+| --- | --- |
+| URL | Google Sheet URL or ID; must be publicly readable |
+| Name | Display name; also default route name |
+| Tab | Optional explicit tab name. For this workbook, defaults to Name; for another workbook, uses its linked gid or first tab |
+| Path | Optional stable route, such as current. Set it to keep a route when changing the display name |
+| Enabled | Checked/TRUE connects; unchecked/FALSE disconnects both list and routes. Blank also connects |
+| Description | Optional short detail on the standard index |
+
+Blank URLs are ignored. Duplicate or reserved paths produce a clear error instead of silently routing to the wrong project. `/projects`, `/projects.json`, and `/sheet` are reserved. Static projects under public remain independent of connected-sheet projects.
+
+## Page content
+
+Each connected tab uses A for HTML, Markdown, or redirect content and B for an optional name. Rows appear in sheet order. A Content/Title header is skipped; otherwise A1 is included. Named page routes are lowercase, with spaces converted to hyphens. Unnamed redirects use the destination as the visible name and derive a route from it (go.com becomes go-com). Other unnamed pages use their HTML title, Markdown heading, or first text line. Cell aliases such as a2 remain available but aren't shown as labels.
+
+`/current/name` and `/old/name` are your current connections. `/sheet/name` remains an alias of the connected Current tab; disconnecting Current also disables this alias. `project.ends.at/path?query` redirects to `ends.at/project/path?query`.
+
+Sheet content is loaded on navigation. Google may briefly cache sheet edits; refresh after editing. Content remains on the original publicly shared sheet. Custom HTML runs as authored.
 
 ## Deploy
 
-Install dependencies, run `npm test`, then `npm run deploy`. Deployment reuses Cloudflare Worker `ends-at-text`. Root and wildcard routes both map to it. Existing databases and the older `ends-notes` Worker are retained for rollback. Only the `public` folder is exposed as assets.
-
-The previous text-library source is preserved in private repository `nathanpuls/ends-old-`. Existing text-library data remains in its original Cloudflare D1 database; it is not listed in the new project hub.
-
-Cloudflare native Git builds are connected to `nathanpuls/endsat`, branch `main`. Each push runs `npm test` and `npx wrangler deploy --config wrangler.jsonc`. GitHub Actions also runs the tests; no GitHub deployment secret is required.
+`npm test` tests home modes, redirects, aliases, project order, disconnect/reconnect, custom content, and source routing. `npm run deploy` uses the existing Cloudflare Worker ends-at-text. Native Cloudflare Git builds deploy main automatically. Previous source remains in nathanpuls/ends-old-; existing older databases are retained.
