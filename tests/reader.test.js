@@ -8,7 +8,7 @@ test('reader controls retain exact original Markdown and plain text, including f
     // An explicit closing script alone is plain text; no raw source can escape its data element.
     const data=JSON.parse(html.match(/id="reader-source">([\s\S]*?)<\/script>/)[1]);
     assert.equal(data.source,source);assert.equal(data.backPath,'/old');
-    assert.match(html,/position:sticky/);assert.match(html,/aria-label="Back"/);assert.match(html,/aria-label="Copy source"/);
+    assert.match(html,/position:fixed/);assert.match(html,/aria-label="Back"/);assert.match(html,/aria-label="Copy source"/);
   }
 });
 test('authored HTML stays unwrapped, including fragments and fenced HTML',()=>{

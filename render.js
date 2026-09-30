@@ -367,12 +367,14 @@ function markdownToHtml(markdown) {
 
 function readerControls(html, source, backPath) {
     const css = `<style>
-      .reader-header{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;padding:4px max(12px,env(safe-area-inset-left));padding-top:max(4px,env(safe-area-inset-top));background:rgba(255,255,255,.96)}
-      .reader-header button{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:6px;background:transparent;color:#171717;cursor:pointer;touch-action:manipulation}
+      .reader-header{display:contents}
+      #reader-back,.reader-copy{position:fixed;top:max(4px,env(safe-area-inset-top));z-index:10}
+      #reader-back{left:max(12px,env(safe-area-inset-left))}.reader-copy{right:max(12px,env(safe-area-inset-right))}
+      .reader-header button{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border:0;border-radius:6px;background:rgba(255,255,255,.96);color:#171717;cursor:pointer;touch-action:manipulation}
       .reader-header button:hover{background:#f5f5f5}.reader-header button:focus-visible{outline:2px solid #888;outline-offset:2px}.reader-header svg{width:20px;height:20px}
-      .reader-copy{position:relative}.reader-feedback{position:absolute;right:0;top:48px;white-space:nowrap;font:13px system-ui,sans-serif;color:#555;background:#fff;padding:5px 8px;border:1px solid #eee;border-radius:5px;opacity:0;pointer-events:none}.reader-feedback.visible{opacity:1}
+      .reader-feedback{position:absolute;right:0;top:48px;white-space:nowrap;font:13px system-ui,sans-serif;color:#555;background:#fff;padding:5px 8px;border:1px solid #eee;border-radius:5px;opacity:0;pointer-events:none}.reader-feedback.visible{opacity:1}
     </style>`;
-    const controls = `<header class="reader-header" aria-label="Page controls"><button id="reader-back" type="button" aria-label="Back" title="Back">${ARROW_LEFT}</button><div class="reader-copy"><button id="reader-copy" type="button" aria-label="Copy source" title="Copy source">${COPY}</button><span id="reader-feedback" class="reader-feedback" role="status" aria-live="polite"></span></div></header>`;
+    const controls = `<header class="reader-header" aria-label="Page controls"><button id="reader-back" type="button" aria-label="Back" title="Back">${ARROW_LEFT}</button><div class="reader-copy"><button id="reader-copy" type="button" aria-label="Copy source">${COPY}</button><span id="reader-feedback" class="reader-feedback" role="status" aria-live="polite"></span></div></header>`;
     const data = JSON.stringify({source,backPath}).replace(/</g,'\\u003c');
     const script = `<script type="application/json" id="reader-source">${data}</script><script>
       (()=>{const {source,backPath}=JSON.parse(document.getElementById('reader-source').textContent);let feedbackTimer;
