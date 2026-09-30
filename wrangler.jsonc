@@ -1,0 +1,12 @@
+{
+ "name":"ends-at-text",
+ "main":"worker.js",
+ "compatibility_date":"2026-09-30",
+ "account_id":"ed3b0af15e1c2b8a6a351cc929b0a312",
+ "workers_dev":false,
+ "assets":{"directory":"./public","binding":"ASSETS","run_worker_first":true},
+ "routes":[
+  {"pattern":"ends.at/*","zone_id":"6ccab0e197d61ddf0b5ab11c64d36543"},
+  {"pattern":"*.ends.at/*","zone_id":"6ccab0e197d61ddf0b5ab11c64d36543"}
+ ]
+}
