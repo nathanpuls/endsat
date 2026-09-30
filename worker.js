@@ -65,7 +65,10 @@ export function pageEntries(rows) {
     const provided = String(row[1] || '').trim();
     const redirect = getRedirectUrl(value);
     const linkName = redirect ? redirect.replace(/^https?:\/\//i, '').replace(/\/$/, '') : '';
-    const label = provided || linkName || value.match(/<title[^>]*>([^<]*)<\/title>/i)?.[1] || value.match(/^#{1,6}\s+(.+)$/m)?.[1] || value.replace(/<[^>]*>/g, '').trim().split('\n')[0].slice(0, 100) || 'Page';
+    const textLabel = text => String(text || '').replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    const htmlTitle = textLabel(value.match(/<title[^>]*>([\s\S]*?)<\/title>/i)?.[1]);
+    const heading = textLabel(value.match(/<h[1-6][^>]*>([\s\S]*?)<\/h[1-6]>/i)?.[1] || value.match(/^#{1,6}\s+(.+)$/m)?.[1]);
+    const label = provided || htmlTitle || heading || linkName || cell.toUpperCase();
     const slug = slugify(provided || linkName) || cell;
     let unique = slug;
     if (used.has(unique)) unique = `${slug}-${cell}`;
@@ -124,9 +127,16 @@ async function route(request, env, fetcher) {
     const mode = (settings.home_mode || 'auto').toLowerCase();
     if (!['auto', 'content', 'projects'].includes(mode)) throw new Error('home_mode must be auto, content, or projects.');
     if (mode !== 'projects') {
-      const cell = settings.home_cell || 'A2';
+      const selected = Object.hasOwn(settings, 'project');
+      const cell = selected ? settings.home_cell : settings.home_cell || 'A2';
+      if (selected && !cell) throw new Error('Choose a Page from the selected Project in Settings.');
       if (!/^[A-Z]{1,2}[1-9]\d{0,3}$/i.test(cell)) throw new Error('home_cell must be a single cell, such as A2.');
-      const home = await readSheet(masterId, settings.home_tab || 'Home', cell, fetcher);
+      let source = {id:masterId, tab:settings.home_tab || 'Home'};
+      if (selected && settings.project !== 'Home') {
+        source = (await getProjects()).find(project => project.path === settings.home_project_path);
+        if (!source) throw new Error('Choose an enabled Project in Settings.');
+      }
+      const home = await readSheet(source.id, source.tab, cell, fetcher, source.gid);
       const value = String(home[0]?.[0] ?? '');
       if (value.trim()) return renderContent(value, request);
       if (mode === 'content') throw new Error(`The home page cell ${cell} is empty.`);

@@ -1,0 +1,31 @@
+{
+  "helperTab": "_Homepage",
+  "helperHidden": true,
+  "formulas": {
+    "_Homepage!A2": "=ARRAYFORMULA(VSTACK({\"Home\",\"https://docs.google.com/spreadsheets/d/1YM3Kgc-uKrnZlvKFA9Ul-_d1NRk02FWfthSfsV0Mij8/edit\",\"Home\",\"\"},IFERROR(LET(p,INDIRECT(\"'\"&SUBSTITUTE(Settings!B6,\"'\",\"''\")&\"'!A2:F1000\"),u,CHOOSECOLS(p,1),n,CHOOSECOLS(p,2),t,CHOOSECOLS(p,3),r,CHOOSECOLS(p,4),e,CHOOSECOLS(p,5),FILTER(HSTACK(IF(n<>\"\",n,IF(t<>\"\",t,\"Project\"))&\" — /\"&IF(r<>\"\",REGEXREPLACE(r,\"^/+|/+$\",\"\"),LOWER(REGEXREPLACE(IF(n<>\"\",n,t),\"[^a-zA-Z0-9/_-]+\",\"-\"))),u,IF(t<>\"\",t,n),\"/\"&IF(r<>\"\",REGEXREPLACE(r,\"^/+|/+$\",\"\"),LOWER(REGEXREPLACE(IF(n<>\"\",n,t),\"[^a-zA-Z0-9/_-]+\",\"-\")))),u<>\"\",REGEXMATCH(LOWER(e&\"\"),\"^(false|no|off|0|disabled)$\")=FALSE)),{\"\",\"\",\"\",\"\"})))",
+    "_Homepage!F2": "=IFERROR(LET(source,XLOOKUP(Settings!B3,A2:A1000,B2:B1000,\"\"),tab,XLOOKUP(Settings!B3,A2:A1000,C2:C1000,\"\"),raw,IF(REGEXMATCH(source,\"1YM3Kgc-uKrnZlvKFA9Ul-_d1NRk02FWfthSfsV0Mij8\"),INDIRECT(\"'\"&SUBSTITUTE(tab,\"'\",\"''\")&\"'!A:B\"),IMPORTRANGE(source,\"'\"&SUBSTITUTE(tab,\"'\",\"''\")&\"'!A:B\")),content,CHOOSECOLS(raw,1),manual,CHOOSECOLS(raw,2),rownum,SEQUENCE(ROWS(raw)),labels,MAP(content,manual,rownum,LAMBDA(v,n,r,LET(text,TRIM(v&\"\"),title,TRIM(REGEXREPLACE(IFERROR(REGEXEXTRACT(text,\"(?is)<title[^>]*>(.*?)</title>\"),\"\"),\"<[^>]*>\",\"\")),heading,TRIM(REGEXREPLACE(IFERROR(REGEXEXTRACT(text,\"(?is)<h[1-6][^>]*>(.*?)</h[1-6]>\"),IFERROR(REGEXEXTRACT(text,\"(?m)^#{1,6}\\s+(.+)$\"),\"\")),\"<[^>]*>\",\"\")),link,IF(REGEXMATCH(text,\"(?i)^(https?://[^\\s<>]+|(?:mailto|tel|sms):[^\\s<>]+|(?:localhost|[\\w-]+(?:\\.[\\w-]+)+)(?::[0-9]+)?(?:/[^\\s<>]*)?)$\"),REGEXREPLACE(REGEXREPLACE(text,\"(?i)^https?://\",\"\"),\"/$\",\"\"),\"\"),label,IF(TRIM(n&\"\")<>\"\",TRIM(n&\"\"),IF(title<>\"\",title,IF(heading<>\"\",heading,IF(link<>\"\",link,\"A\"&r)))),IF(OR(text=\"\",AND(r=1,REGEXMATCH(text,\"(?i)^content(?:\\s*\\(|$)\"),REGEXMATCH(TRIM(n&\"\"),\"(?i)^(title|name)$\"))),\"\",IF(label=\"A\"&r,label,label&\" · A\"&r))))),FILTER(HSTACK(labels,\"A\"&rownum),labels<>\"\")),{\"\",\"\"})",
+    "Settings!B8": "=IFERROR(XLOOKUP(B3,_Homepage!A2:A1000,_Homepage!C2:C1000,\"\"),\"\")",
+    "Settings!B9": "=IFERROR(XLOOKUP(B4,_Homepage!F2:F10001,_Homepage!G2:G10001,\"\"),\"\")",
+    "Settings!B10": "=IFERROR(XLOOKUP(B3,_Homepage!A2:A1000,_Homepage!D2:D1000,\"\"),\"\")"
+  },
+  "settingsKeys": {
+    "A3": "Project",
+    "A4": "Page",
+    "A8": "home_tab",
+    "A9": "home_cell",
+    "A10": "home_project_path"
+  },
+  "validation": {
+    "Settings!B3": "='_Homepage'!$A$2:$A$1000",
+    "Settings!B4": "='_Homepage'!$F$2:$F$10001"
+  },
+  "hiddenSettingsRows": [
+    8,
+    9,
+    10
+  ],
+  "defaultSelection": {
+    "Project": "Home",
+    "Page": "ends.at · A2"
+  }
+}

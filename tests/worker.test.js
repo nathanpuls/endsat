@@ -9,7 +9,9 @@ function fixture(settings = [], projects = [['URL','Name','Tab','Path','Enabled'
  const fetcher=async input => {
   const url=new URL(input);calls.push(url);
   const tab=url.searchParams.get('sheet');
-  const rows=tab==='Settings'?[['Setting','Value'],...settings]:tab==='Projects (Connected Sheets)'?projects:tab==='Home'?[[home]]:tab==='Current'?[[],['go.com'],['# Named page','Hello'],['<button>Custom</button>','custom']]:[['# Old page','old']];
+  let rows=tab==='Settings'?[['Setting','Value'],...settings]:tab==='Projects (Connected Sheets)'?projects:tab==='Home'?[[home]]:tab==='Current'?[[],['go.com'],['# Named page','Hello'],['<button>Custom</button>','custom']]:[['# Old page','old']];
+  const singleCell=url.searchParams.get('range').match(/^A(\d+)$/);
+  if(singleCell && tab==='Current') rows=[[rows[Number(singleCell[1])-1]?.[0] || '']];
   return new Response(`google.visualization.Query.setResponse(${JSON.stringify({status:'ok',table:{rows:rows.map(row=>({c:row.map(v=>({v}))}))}})});`);
  };
  const worker=createWorker(fetcher);
@@ -73,4 +75,20 @@ test('missing tabs cannot silently use the first workbook tab',async()=>{
  const res=await worker.fetch(new Request('https://ends.at/'));
  assert.equal(res.status,503);assert.match(await res.text(),/Settings tab is missing/);
  assert.throws(()=>projectEntries([['# Wrong tab']]),/Projects tab is missing/);
+});
+test('friendly labels follow name, title, heading, redirect, then uppercase cell',()=>{
+ const rows=[['<title>Title</title><h1>Heading</h1>','Manual'],['<title>   </title><h1><span>Useful</span> heading</h1>'],['<div>Some unnamed text</div>'],['https://example.com/'],['plain text'],['# Markdown heading']];
+ assert.deepEqual(pageEntries(rows).map(p=>p.label),['Manual','Useful heading','A3','example.com','A5','Markdown heading']);
+ assert.equal(pageEntries([['<title>Document title</title><h1>Heading</h1>']])[0].label,'Document title');
+});
+test('Project and resolved Page render one cell as the root homepage',async()=>{
+ const f=fixture([['Project','Current — /current'],['Page','Custom · A4'],['home_tab','Current'],['home_cell','A4'],['home_project_path','/current']]);
+ assert.equal(await (await f.request('/')).text(),'<button>Custom</button>');
+ assert.ok(f.calls.some(url=>url.searchParams.get('sheet')==='Current' && url.searchParams.get('range')==='A4'));
+});
+test('invalid page/project selections fail clearly; projects mode bypasses selection',async()=>{
+ const base=[['Project','Current — /current'],['home_project_path','/current'],['home_cell','']];
+ assert.equal((await fixture(base).request('/')).status,503);
+ assert.equal((await fixture([...base,['home_mode','projects']]).request('/')).status,200);
+ assert.equal((await fixture([['Project','Missing'],['home_project_path','/missing'],['home_cell','A4']]).request('/')).status,503);
 });
