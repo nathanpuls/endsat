@@ -14,7 +14,7 @@ test('wildcard redirects preserve project, path and query',()=>{
 test('sheet deep links serve the sheet renderer',async()=>{
  let fetched;
  const res=await worker.fetch(new Request('https://ends.at/sheet/linktree'),{ASSETS:{fetch(req){fetched=new URL(req.url).pathname;return new Response('renderer')}}});
- assert.equal(fetched,'/sheet/index.html');assert.equal(await res.text(),'renderer');
+ assert.equal(fetched,'/sheet/');assert.equal(await res.text(),'renderer');
 });
 test('separate project assets and unknown paths remain separate',async()=>{
  let fetched;
