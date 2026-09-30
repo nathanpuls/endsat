@@ -1,169 +1,22 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ends.at</title>
-  <link
-    rel="stylesheet"
-    href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap"
-  />
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
-  <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      text-align: center;
-      margin: 0;
-      padding: 0;
-    }
-
-    #search-container {
-      position: relative;
-      display: inline-block;
-      width: 100%;
-      max-width: 300px;
-    }
-
-    #search-bar {
-      font-family: 'Poppins', sans-serif;
-      padding: 10px 15px;
-      font-size: 16px;
-      width: 100%;
-      border: 2px solid black;
-      box-sizing: border-box;
-      border-radius: 30px;
-      outline: none;
-    }
-
-    #suggestions {
-      position: absolute;
-      font-size: 16px;
-      top: 100%;
-      left: 0;
-      width: 100%;
-      margin: 0;
-      padding: 0;
-      list-style-type: none;
-      border: 1px solid #ccc;
-      border-radius: 30px;
-      background-color: white;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-      z-index: 1000;
-      display: none;
-      box-sizing: border-box;
-    }
-
-    #suggestions li {
-      margin: 0; /* Remove margins from <li> */
-      padding: 0; /* Remove padding from <li> */
-    }
-
-    #suggestions li a {
-      display: block; /* Make <a> fill the <li> */
-        padding: 10px 15px;
-      text-align: left; /* Left-align the text */
-      text-decoration: none;
-      color: black;
-      width: 100%;
-      white-space: normal; /* Allow text to wrap */
-      word-wrap: break-word; /* Wrap long words */
-      box-sizing: border-box; /* Prevent any overflow issues */
-    }
-
-    #suggestions li:hover {
-      background-color: #f0f0f0;
-      border-radius: 30px;
-    }
-
-    #brand {
-      text-decoration: none;
-      color: black;
-    }
-  </style>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ends.at</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#fff;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:680px;margin:12vh auto;padding:0 24px}h1{font-size:32px;font-weight:650;letter-spacing:-1px;margin:0 0 40px}a{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px 0;border-bottom:1px solid #eee;color:inherit;text-decoration:none}a:hover{color:#666}small{display:block;color:#888;font-size:14px;margin-top:6px;font-weight:400}.arrow{color:#999}#status{color:#777;font-size:14px}
+</style>
 </head>
-<body>
-  <a href="javascript:void(0);" id="brand" onclick="clearAndFocusSearch()"><h2>ends.at</h2></a>
-  <div id="search-container">
-    <input type="text" id="search-bar" placeholder="Search links" autofocus autocomplete="off"/>
-    <ul id="suggestions"></ul>
-  </div>
-
-  <script>
-    const collectionId = 50593298;
-    const apiEndpoint = `https://api.raindrop.io/rest/v1/raindrops/${collectionId}`;
-    const authToken = "Bearer 0f1d16de-033f-4d92-9a50-e37992ed9b94";
-
-    const requestOptions = {
-      method: "GET",
-      headers: new Headers({
-        Authorization: authToken,
-      }),
-    };
-
-    let suggestionsList = [];
-
-    // Fetch data and populate suggestionsList
-    fetch(apiEndpoint, requestOptions)
-      .then((response) => response.json())
-      .then((data) => {
-        suggestionsList = data.items.map((item) => ({
-          title: item.title || item.link,
-          link: item.link,
-        }));
-      })
-      .catch((error) => console.error("Error fetching data:", error));
-
-    const searchBar = document.getElementById("search-bar");
-    const suggestions = document.getElementById("suggestions");
-
-    searchBar.addEventListener("keyup", (event) => {
-      const filterText = event.target.value.toLowerCase();
-      suggestions.innerHTML = "";
-
-      if (filterText) {
-        // Filter suggestions based on words starting with the search term
-        const filtered = suggestionsList.filter((item) =>
-          item.title
-            .toLowerCase()
-            .split(" ")
-            .some((word) => word.startsWith(filterText))
-        );
-
-        filtered.forEach((item) => {
-          const listItem = document.createElement("li");
-          const link = document.createElement("a");
-          link.href = item.link;
-          link.textContent = item.title;
-
-          listItem.appendChild(link);
-          suggestions.appendChild(listItem);
-        });
-
-        suggestions.style.display = filtered.length > 0 ? "block" : "none";
-      } else {
-        suggestions.style.display = "none";
-      }
-    });
-
-    // Hide suggestions when clicking outside
-    document.addEventListener("click", (event) => {
-      if (event.target !== searchBar) {
-        suggestions.style.display = "none";
-      }
-    });
-
-    // Allow suggestions to reappear on focus
-    searchBar.addEventListener("focus", () => {
-      if (searchBar.value && suggestions.innerHTML) {
-        suggestions.style.display = "block";
-      }
-    });
-
-    function clearAndFocusSearch() {
-      const searchBar = document.getElementById('search-bar');
-      searchBar.value = '';
-      searchBar.focus();
-    }
-  </script>
-</body>
-</html>
+<body><main><h1>ends.at</h1><nav id="projects" aria-label="Projects"><a href="/sheet"><span>Sheet<small>Pages from Google Sheets</small></span><span class="arrow" aria-hidden="true">↗</span></a></nav><p id="status" role="status"></p></main>
+<script>
+fetch('/projects.json').then(r=>{if(!r.ok)throw new Error();return r.json()}).then(projects=>{
+ const nav=document.getElementById('projects');nav.replaceChildren();
+ for(const project of projects){
+  if(!/^\/[a-z0-9/_-]+$/i.test(project.path))continue;
+  const a=document.createElement('a');a.href=project.path;
+  const label=document.createElement('span');label.textContent=project.name;
+  if(project.description){const detail=document.createElement('small');detail.textContent=project.description;label.append(detail)}
+  const arrow=document.createElement('span');arrow.className='arrow';arrow.textContent='↗';arrow.setAttribute('aria-hidden','true');a.append(label,arrow);nav.append(a);
+ }
+}).catch(()=>{});
+</script></body></html>
