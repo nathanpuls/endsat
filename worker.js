@@ -1,4 +1,6 @@
 import {escapeHtml, getRenderableHtml, getRedirectUrl} from './render.js';
+import {dropApi} from './drop.js';
+export {DropQueue} from './drop.js';
 
 export const SHEET_ID = '1YM3Kgc-uKrnZlvKFA9Ul-_d1NRk02FWfthSfsV0Mij8';
 const PROJECTS_TAB = 'Projects (Connected Sheets)';
@@ -86,9 +88,9 @@ function indexHtml(title, entries, back = true) {
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(title)}</title><style>*{box-sizing:border-box}body{margin:0;background:#fff;color:#171717;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}main{max-width:680px;margin:12vh auto;padding:0 24px}h1{font-size:32px;font-weight:650;letter-spacing:-1px;margin:36px 0 40px}nav a{display:flex;align-items:center;justify-content:space-between;gap:24px;padding:20px 0;border-bottom:1px solid #eee;color:inherit;text-decoration:none}a:hover{color:#666}small{display:block;color:#888;font-size:14px;margin-top:6px}.back{color:#777;text-decoration:none}.arrow{color:#999}</style></head><body><main>${back ? '<a class="back" href="/">← Home</a>' : ''}<h1>${escapeHtml(title)}</h1><nav aria-label="${escapeHtml(title)}">${entries.map(entry => `<a href="${escapeHtml(entry.path)}"><span>${escapeHtml(entry.name)}${entry.description ? `<small>${escapeHtml(entry.description)}</small>` : ''}</span><span class="arrow" aria-hidden="true">↗</span></a>`).join('') || '<p>No pages yet.</p>'}</nav></main></body></html>`;
 }
 
-function renderContent(value, request) {
+function renderContent(value, request, backPath = '/projects') {
   const destination = getRedirectUrl(value);
-  if (!destination) return htmlResponse(getRenderableHtml(value));
+  if (!destination) return htmlResponse(getRenderableHtml(value, {backPath}));
   // Web redirects are handled before HTML loads. Other supported protocols use the browser.
   if (/^https?:/i.test(destination)) return new Response(null, {status:302, headers:{location:destination, 'cache-control':'no-store'}});
   return htmlResponse(`<!doctype html><meta charset="utf-8"><a href="${escapeHtml(destination)}">Open ${escapeHtml(destination)}</a><script>location.replace(${JSON.stringify(destination).replace(/</g,'\\u003c')})</script>`);
@@ -100,6 +102,7 @@ export function createWorker(fetcher = fetch) {
       const url = new URL(request.url);
       const redirect = subdomainRedirect(url);
       if (redirect) return new Response(null, {status:302, headers:{location:redirect,'cache-control':'no-store'}});
+      if (url.pathname === '/api/drop' || url.pathname.startsWith('/api/drop/')) return dropApi(request, env);
       if (!['GET','HEAD'].includes(request.method)) return new Response('Method not allowed',{status:405,headers:{Allow:'GET, HEAD'}});
       let response;
       try {
@@ -138,7 +141,7 @@ async function route(request, env, fetcher) {
       }
       const home = await readSheet(source.id, source.tab, cell, fetcher, source.gid);
       const value = String(home[0]?.[0] ?? '');
-      if (value.trim()) return renderContent(value, request);
+      if (value.trim()) return renderContent(value, request, source.path || '/projects');
       if (mode === 'content') throw new Error(`The home page cell ${cell} is empty.`);
     }
     return htmlResponse(indexHtml(title, await getProjects(), false));
@@ -157,10 +160,11 @@ async function route(request, env, fetcher) {
   const prefix = path === '/sheet' || path.startsWith('/sheet/') ? '/sheet' : project.path;
   const requested = path.slice(prefix.length).replace(/^\//, '').toLowerCase();
   const entries = pageEntries(await readSheet(project.id, project.tab, 'A1:B10000', fetcher, project.gid));
+  if (!requested && project.path === '/drop' && project.tab === 'Drop' && entries.length) return renderContent(entries[0].value, request);
   if (!requested) return htmlResponse(indexHtml(project.name, entries.map(entry => ({name:entry.label, path:prefix + '/' + entry.slug.split('/').map(encodeURIComponent).join('/')}))));
   const entry = entries.find(entry => entry.slug === requested) || entries.find(entry => entry.cell === requested);
   if (!entry) return htmlResponse(indexHtml('Page not found', [{name:'Back to ' + project.name, path:prefix}]),404);
-  return renderContent(entry.value, request);
+  return renderContent(entry.value, request, prefix);
 }
 
 export default createWorker();
