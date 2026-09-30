@@ -13,7 +13,7 @@ export default {
     if (redirect) return new Response(null, {status:302, headers:{location:redirect,'cache-control':'no-store'}});
     if (!['GET','HEAD'].includes(request.method)) return new Response('Method not allowed',{status:405,headers:{Allow:'GET, HEAD'}});
     if (url.pathname === '/sheet' || url.pathname.startsWith('/sheet/')) {
-      return env.ASSETS.fetch(new Request(new URL('/sheet/index.html', url), request));
+      return env.ASSETS.fetch(new Request(new URL('/sheet/', url), request));
     }
     return env.ASSETS.fetch(request);
   }
