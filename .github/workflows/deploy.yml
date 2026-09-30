@@ -1,0 +1,22 @@
+name: Test and deploy ends.at
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Test routes and sheet renderer
+        run: npm test
+      - name: Deploy to Cloudflare
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ed3b0af15e1c2b8a6a351cc929b0a312
+          wranglerVersion: '4'
+          command: deploy --config wrangler.jsonc
