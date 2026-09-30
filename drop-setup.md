@@ -16,7 +16,7 @@ For Drop, replace the first two actions with **Get Text from Shortcut Input** an
 
 Open Drop on the Mac → **Connect iPhone** → **Copy key**. Put this key in the first Text action of **Drop Receiver**. The key identifies one private queue; it is sent in an Authorization header, never a public Sheet cell or query string. Keep the browser's local storage so it retains the same queue. An additional browser can use the same key through Connect iPhone → Use this key.
 
-Receiver source: `shortcuts/Drop-Receiver.source.plist`. Rebuild it with `python3 shortcuts/build_receiver.py`; sign it on a Mac with `shortcuts sign --mode anyone --input shortcuts/Drop-Receiver.source.plist --output Drop-Receiver.shortcut`. Signing/import and execution must be verified in Apple Shortcuts; generated source alone is not evidence that the phone can run it.
+Receiver draft source: `shortcuts/Drop-Receiver.source.plist`, generated from the action registry. Shortcuts app control was blocked in this session, and the command-line signer rejected both this draft and a reference Shortcut file. There is no verified installable receiver yet. Use the native editor steps below, or finish signing/import verification in a session with Shortcuts app access. Generated source alone is not evidence that the phone can run it.
 
 If you need to build it in the editor, these are the exact actions:
 
