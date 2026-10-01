@@ -1,15 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createWorker, subdomainRedirect, pageEntries, projectEntries, SHEET_ID} from '../worker.js';
+import {createWorker, subdomainRedirect, pageEntries, projectEntries, sheetTabs, automaticProjects, SHEET_ID} from '../worker.js';
 import {getRenderableHtml, getRedirectUrl} from '../render.js';
 
 const master = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/edit`;
-function fixture(settings = [], projects = [['URL','Name','Tab','Path','Enabled','Description'],[master,'Current'],[master,'Old']], home = '<button>My home</button>') {
+const external = 'https://docs.google.com/spreadsheets/d/1234567890123456789012345/edit#gid=42';
+function fixture(settings = [], projects = [['URL','Name','Tab','Path','Enabled','Description'],[master,'Current'],[master,'Old']], home = '<button>My home</button>', tabs = ['Current','Old','Home','Settings','Projects (Connected Sheets)']) {
  const calls=[];
  const fetcher=async input => {
   const url=new URL(input);calls.push(url);
+  if(url.pathname.endsWith('/htmlview')) return new Response(tabs.map((name,index)=>`items.push({name: ${JSON.stringify(name)}, pageUrl: "https://docs.google.com/test?gid=${index}", gid: "${index}"});`).join(''));
   const tab=url.searchParams.get('sheet');
   let rows=tab==='Settings'?[['Setting','Value'],...settings]:tab==='Projects (Connected Sheets)'?projects:tab==='Home'?[[home]]:tab==='Current'?[[],['go.com'],['# Named page','Hello'],['<button>Custom</button>','custom']]:[['# Old page','old']];
+  if(tab==='Settings' && url.searchParams.get('range')==='A6:B6') rows=[['projects_tab','Projects (Connected Sheets)']];
   const singleCell=url.searchParams.get('range').match(/^A(\d+)$/);
   if(singleCell && tab==='Current') rows=[[rows[Number(singleCell[1])-1]?.[0] || '']];
   return new Response(`google.visualization.Query.setResponse(${JSON.stringify({status:'ok',table:{rows:rows.map(row=>({c:row.map(v=>({v}))}))}})});`);
@@ -23,15 +26,15 @@ test('wildcard redirects preserve project, path and query',()=>{
  assert.equal(subdomainRedirect(new URL('https://www.ends.at/a')),'https://ends.at/a');
  assert.equal(subdomainRedirect(new URL('https://ends.at/')),'');
 });
-test('project order follows rows; disabled projects disconnect and reconnect',async()=>{
- const rows=[['URL','Name','Tab','Path','Enabled'],[master,'Old'],[master,'Current','','',false]];
+test('local tabs are automatic in tab order; external rows disconnect and reconnect',async()=>{
+ const rows=[['URL','Name','Tab','Path','Enabled'],[master,'Current','','',false],[external,'Shared','My Tab','shared',false],[external,'Other','My Tab','other',true]];
  const f=fixture([],rows);
- assert.deepEqual((await (await f.request('/projects.json')).json()).map(p=>p.name),['Old']);
- assert.equal((await f.request('/current')).status,404);
- assert.equal((await f.request('/sheet/a2')).status,404);
- rows[2][4]=true;
- assert.deepEqual((await (await f.request('/projects.json')).json()).map(p=>p.name),['Old','Current']);
+ assert.deepEqual((await (await f.request('/projects.json')).json()).map(p=>p.name),['Current','Old','Home','Other']);
+ assert.equal((await f.request('/shared')).status,404);
  assert.equal((await f.request('/sheet/a2')).headers.get('location'),'https://go.com');
+ rows[2][4]=true;
+ assert.deepEqual((await (await f.request('/projects.json')).json()).map(p=>p.name),['Current','Old','Home','Shared','Other']);
+ assert.equal((await f.request('/shared')).status,200);
 });
 test('custom home HTML, Markdown and redirects are rendered',async()=>{
  assert.equal(await (await fixture().request('/')).text(),'<button>My home</button>');
@@ -62,7 +65,7 @@ test('unnamed redirects show destination, skip header, keep named and cell alias
 test('external connections honor gid and explicit tab and stable path',()=>{
  const external='https://docs.google.com/spreadsheets/d/1234567890123456789012345/edit#gid=42';
  assert.deepEqual(projectEntries([['URL','Name','Tab','Path'],[external,'Display','My Tab','stable']])[0],{name:'Display',path:'/stable',description:'',id:'1234567890123456789012345',tab:'My Tab',gid:'42'});
- assert.throws(()=>projectEntries([['URL','Name'],[master,'Same'],[master,'Same']]),/duplicated/);
+ assert.throws(()=>projectEntries([['URL','Name'],[external,'Same'],[external,'Same']]),/duplicated/);
 });
 test('HTML and redirect behavior, HEAD and method handling',async()=>{
  assert.equal(getRenderableHtml('<button>Hello</button>'),'<button>Hello</button>');
@@ -91,4 +94,35 @@ test('invalid page/project selections fail clearly; projects mode bypasses selec
  assert.equal((await fixture(base).request('/')).status,503);
  assert.equal((await fixture([...base,['home_mode','projects']]).request('/')).status,200);
  assert.equal((await fixture([['Project','Missing'],['home_project_path','/missing'],['home_cell','A4']]).request('/')).status,503);
+});
+
+test('new tabs, renames and tab reordering take effect without connection rows',async()=>{
+ const tabs=['Ideas','Recipes','Settings','Projects (Connected Sheets)','_Homepage'];
+ const f=fixture([], [['URL','Name']], undefined, tabs);
+ assert.deepEqual((await (await f.request('/projects.json')).json()).map(p=>p.path),['/ideas','/recipes']);
+ assert.equal((await f.request('/ideas/a1')).status,200);
+ tabs.splice(0,2,'Recipes','New Ideas','Travel');
+ assert.deepEqual((await (await f.request('/projects.json')).json()).map(p=>p.path),['/recipes','/new-ideas','/travel']);
+ assert.equal((await f.request('/ideas')).status,404);
+ assert.equal((await f.request('/new-ideas/a1')).status,200);
+ assert.equal((await f.request('/settings')).status,404);
+});
+
+test('tab discovery decodes Google string escapes without evaluating code',()=>{
+ const html=String.raw`items.push({name: "Mom\x27s \x26 \"Ideas\"", pageUrl: "https:\/\/docs.google.com\/test?headers\x3dtrue", gid: "7"});`;
+ assert.deepEqual(sheetTabs(html),[{name:'Mom\'s & "Ideas"',gid:'7'}]);
+ assert.throws(()=>sheetTabs('<h1>Sign in</h1>'),/Could not discover/);
+ assert.throws(()=>automaticProjects([{name:'Ideas',gid:'1'},{name:'IDEAS',gid:'2'}]),/unique/);
+ assert.throws(()=>automaticProjects([{name:'api',gid:'1'}]),/reserved/);
+});
+
+test('external paths cannot shadow automatic tabs; homepage choices include both sources',async()=>{
+ assert.equal((await fixture([], [['URL','Name','Tab','Path'],[external,'Shared','Tab','current']]).request('/projects')).status,503);
+ const f=fixture([], [['URL','Name','Tab','Path'],[external,'Shared, notes','Tab','shared']]);
+ const csv=await (await f.request('/projects.csv')).text();
+ assert.match(csv,/"Current — \/current"/);assert.match(csv,/"Home",/);assert.match(csv,/"Shared, notes — \/shared"/);
+ assert.ok(f.calls.some(url=>url.searchParams.get('sheet')==='Settings' && url.searchParams.get('range')==='A6:B6'));
+ assert.ok(!f.calls.some(url=>url.searchParams.get('range')==='A1:B100'));
+ const home=fixture([['Project','Ideas — /ideas'],['home_cell','A1'],['home_project_path','/ideas']], [['URL','Name']], undefined, ['Ideas']);
+ assert.match(await (await home.request('/')).text(),/<h1>Old page<\/h1>/);
 });

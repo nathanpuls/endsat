@@ -6,6 +6,50 @@ export const SHEET_ID = '1YM3Kgc-uKrnZlvKFA9Ul-_d1NRk02FWfthSfsV0Mij8';
 const PROJECTS_TAB = 'Projects (Connected Sheets)';
 const slugify = value => String(value).trim().replace(/^https?:\/\/[^/]+/i, '').replace(/[?#].*$/, '').replace(/^\/+|\/+$/g, '').toLowerCase().replace(/[^a-z0-9/_-]+/g, '-').replace(/^-+|-+$/g, '');
 const off = value => /^(false|no|off|0|disabled)$/i.test(String(value).trim());
+const RESERVED_PATHS = new Set(['projects', 'projects.json', 'projects.csv', 'sheet', 'api']);
+
+// The public HTML view exposes Google's visible tab catalog without an API key.
+// Parse its string literals as data; never execute spreadsheet-supplied JavaScript.
+export function sheetTabs(html) {
+  const literal = '"(?:\\\\.|[^"\\\\])*"';
+  const pattern = new RegExp('items\\.push\\(\\{name:\\s*(' + literal + '),\\s*pageUrl:\\s*' + literal + ',\\s*gid:\\s*"(\\d+)"', 'g');
+  const tabs = [...html.matchAll(pattern)].map(match => ({
+    name:JSON.parse(match[1].replace(/\\x([0-9a-f]{2})/gi, '\\u00$1')), gid:match[2]
+  }));
+  if (!tabs.length) throw new Error('Could not discover spreadsheet tabs. Check the main spreadsheet’s public sharing.');
+  return tabs;
+}
+
+export async function readTabs(id, fetcher = fetch) {
+  const response = await fetcher(`https://docs.google.com/spreadsheets/d/${id}/htmlview`, {signal:AbortSignal.timeout(12000), cache:'no-store'});
+  if (!response.ok) throw new Error('Could not load the main spreadsheet’s tabs. Check its public sharing.');
+  return sheetTabs(await response.text());
+}
+
+export function automaticProjects(tabs, masterId = SHEET_ID, connectedTab = PROJECTS_TAB) {
+  const used = new Set();
+  return tabs.flatMap(({name, gid}) => {
+    if (name === 'Settings' || name === connectedTab || name.startsWith('_')) return [];
+    const path = slugify(name.replace(/\//g, '-'));
+    if (!path || RESERVED_PATHS.has(path) || used.has(path)) throw new Error(`Tab "${name}" needs a unique, non-reserved route name.`);
+    used.add(path);
+    return [{name, path:'/' + path, description:'', id:masterId, tab:name, gid}];
+  });
+}
+
+function mergeProjects(local, external) {
+  const used = new Set(local.map(project => project.path));
+  for (const project of external) {
+    if (used.has(project.path)) throw new Error(`Connected Sheet path "${project.path}" conflicts with a spreadsheet tab. Choose another Path.`);
+    used.add(project.path);
+  }
+  return [...local, ...external];
+}
+
+export function projectChoicesCsv(projects, masterId = SHEET_ID) {
+  return projects.map(project => [project.id === masterId && project.tab === 'Home' ? 'Home' : `${project.name} — ${project.path}`, `https://docs.google.com/spreadsheets/d/${project.id}/edit${project.gid ? '#gid=' + project.gid : ''}`, project.tab, project.path]
+    .map(value => '"' + String(value ?? '').replace(/"/g, '""') + '"').join(',')).join('\r\n');
+}
 
 export function subdomainRedirect(url) {
   const suffix = '.ends.at';
@@ -44,11 +88,12 @@ export function projectEntries(rows, masterId = SHEET_ID) {
   const headers = (rows[0] || []).map(value => String(value).trim().toLowerCase());
   if (!headers.includes('url') || !headers.includes('name')) throw new Error('Projects tab is missing. Restore Projects (Connected Sheets) with URL and Name headers, or update projects_tab in Settings.');
   const column = (name, fallback) => headers.includes(name) ? headers.indexOf(name) : fallback;
-  const used = new Set(['projects', 'projects.json', 'sheet']);
+  const used = new Set(RESERVED_PATHS);
   return rows.slice(1).flatMap(row => {
     const source = String(row[column('url', 0)] || '').trim();
     if (!source || off(row[column('enabled', 4)])) return [];
     const {id, gid} = parseSheetSource(source);
+    if (id === masterId) return []; // Local tabs no longer require connection rows.
     const name = String(row[column('name', 1)] || '').trim();
     const tab = String(row[column('tab', 2)] || '').trim() || (id === masterId && !gid ? name : '');
     const path = slugify(row[column('path', 3)] || name || tab || 'project');
@@ -121,11 +166,24 @@ async function route(request, env, fetcher) {
   const path = decodeURIComponent(url.pathname).replace(/\/+$/, '') || '/';
   // Static files stay independent of sheet availability.
   if (/\.(css|js|png|jpe?g|gif|svg|ico|webp|woff2?|map|webmanifest)$/i.test(path)) return env.ASSETS.fetch(request);
+  // This native dropdown feed must not read the Settings formulas that import it.
+  if (path === '/projects.csv') {
+    const rows = await readSheet(masterId, 'Settings', 'A6:B6', fetcher);
+    const connectedTab = rows[0]?.[0] === 'projects_tab' ? String(rows[0][1] || PROJECTS_TAB) : PROJECTS_TAB;
+    const [tabs, connections] = await Promise.all([readTabs(masterId, fetcher), readSheet(masterId, connectedTab, 'A1:F1000', fetcher)]);
+    const projects = mergeProjects(automaticProjects(tabs, masterId, connectedTab), projectEntries(connections, masterId));
+    return new Response(projectChoicesCsv(projects, masterId), {headers:{'content-type':'text/csv; charset=utf-8', 'cache-control':'no-store'}});
+  }
   const settingsRows = await readSheet(masterId, 'Settings', 'A1:B100', fetcher);
   if (String(settingsRows[0]?.[0] || '').trim().toLowerCase() !== 'setting') throw new Error('Settings tab is missing. Restore Settings with Setting and Value headers to reconnect the website.');
   const settings = Object.fromEntries(settingsRows.filter(row => row[0]).map(row => [String(row[0]).trim().toLowerCase(), String(row[1] ?? '').trim()]));
   const title = settings.site_title || 'ends.at';
-  const getProjects = async () => projectEntries(await readSheet(masterId, settings.projects_tab || PROJECTS_TAB, 'A1:F1000', fetcher), masterId);
+  let projectsPromise;
+  const getProjects = () => projectsPromise ||= (async () => {
+    const connectedTab = settings.projects_tab || PROJECTS_TAB;
+    const [tabs, rows] = await Promise.all([readTabs(masterId, fetcher), readSheet(masterId, connectedTab, 'A1:F1000', fetcher)]);
+    return mergeProjects(automaticProjects(tabs, masterId, connectedTab), projectEntries(rows, masterId));
+  })();
   if (path === '/') {
     const mode = (settings.home_mode || 'auto').toLowerCase();
     if (!['auto', 'content', 'projects'].includes(mode)) throw new Error('home_mode must be auto, content, or projects.');
